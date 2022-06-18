@@ -99,9 +99,6 @@ const insertUsers = async (req, res, next) => {
     // Check Email in users table
     const { rows: [count1] } = await usersModel.checkExisting(emailID)
     const result1 = parseInt(count1.total)
-    // Check Email in admin table
-    // const { rows: [count2] } = await adminModel.checkByEmail(emailID)
-    // const result2 = parseInt(count2.total)
 
     if (result1 !== 0) {
       fs.unlink(`./upload/${req.file.filename}`, function (err) {
@@ -113,17 +110,12 @@ const insertUsers = async (req, res, next) => {
       return
     }
 
-    // if (result2 !== 0) {
-    //   notFoundRes(res, 403, 'Email has already been taken')
-    //   return
-    // }
-
     // sendEmail(emailID)
     console.log(data)
-    console.log('data tertangkap ')
+    console.log('data tertangkap regis bisa dilanjutkan')
 
-    // await usersModel.insert(data)
-    // delete data.userPassword
+    await usersModel.insert(data)
+    delete data.userPassword
     response(res, data, 201, `${data.name} has been successfully registered`)
   } catch (error) {
     console.log(error)
@@ -133,7 +125,7 @@ const insertUsers = async (req, res, next) => {
 
 const loginUsers = async (req, res, next) => {
   try {
-    const { email, password } = req.body
+    const { email, password: userPassword } = req.body
     const { rows: [user] } = await usersModel.findByEmail(email)
     // const user = rows[0]
 
@@ -141,12 +133,12 @@ const loginUsers = async (req, res, next) => {
       return response(res, null, 403, 'wrong email or password')
     }
 
-    const validPassword = bcrypt.compareSync(password, user.user_password)
+    const validPassword = bcrypt.compareSync(userPassword, user.password)
     if (!validPassword) {
       return response(res, null, 403, 'wrong email or password')
     }
 
-    delete user.user_password
+    delete user.password
 
     console.log(user)
 
@@ -154,7 +146,7 @@ const loginUsers = async (req, res, next) => {
       email: user.email,
       id: user.id,
       role: 1,
-      status: user.id_status
+      status: user.status
     }
     // generate token
     user.token = generateToken(payload)

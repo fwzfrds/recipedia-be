@@ -2,11 +2,11 @@ const express = require('express')
 const router = express.Router()
 const {
   // getUsers,
-  insertUsers
+  insertUsers,
   // updateUsers,
   // deleteUsers,
   // getProfileDetail,
-  // loginUsers,
+  loginUsers
   // userActivate,
   // refreshToken
 } = require('../controllers/usersController')
@@ -19,7 +19,7 @@ router
   // .get('/active/:token', isTokenValid, userActivate)
   // .get('/profile', protect, isUser, getProfileDetail)
   .post('/registration', uploadPhoto.single('photo'), insertUsers)
-  // .post('/login', loginUsers)
+  .post('/login', loginUsers)
   // .post('/refresh-token', refreshToken)
   // .put('/edit', protect, isUser, updateUsers)
   // .delete('/:emailid', deleteUsers)

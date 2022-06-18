@@ -3,9 +3,8 @@ const jwt = require('jsonwebtoken')
 const sendEmail = async (email) => {
   try {
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // true for 465, false for other ports
+      host: 'smtp.ethereal.email',
+      port: 587,
       auth: {
         user: process.env.EMAIL_FOR_SENDEMAIL, // generated ethereal user
         pass: process.env.PASS_SEND_EMAIL // generated ethereal password
@@ -16,9 +15,9 @@ const sendEmail = async (email) => {
     })
     // send mail with defined transport object
     const info = await transporter.sendMail({
-      from: '"Blanja" <fawwaz.pijarcamp@gmail.com>', // sender address
+      from: 'Recipedia', // sender address
       to: email, // list of receivers
-      subject: 'aktivasi user', // Subject line
+      subject: 'User Activation', // Subject line
       html: `<!DOCTYPE html>
         <html lang="en">
         <head>
