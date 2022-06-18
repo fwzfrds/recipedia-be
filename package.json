@@ -1,0 +1,38 @@
+{
+  "name": "recipedia",
+  "version": "1.0.0",
+  "description": "Sebuah backend untuk website Recipedia yang akan di gunakan di front end nantinya. Repositori ini juga sebagai media pengumpulan tugas bagian backend Fullstack Website Batch 2 Pijar Camp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.1",
+    "helmet": "^5.0.2",
+    "http-errors": "^2.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.4",
+    "nodemailer": "^6.7.5",
+    "pg": "^8.7.3",
+    "uuid": "^8.3.2",
+    "validator": "^13.7.0",
+    "xss": "^1.0.11",
+    "xss-clean": "^0.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "nodemon": "^2.0.16"
+  }
+}
