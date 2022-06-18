@@ -11,66 +11,60 @@ const { generateToken, generateRefreshToken } = require('../helper/authHelper')
 
 const errorServer = new createError.InternalServerError()
 
-// const getUsers = async (req, res, next) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1
-//     let limit = parseInt(req.query.limit) || 4
-//     const offset = (page - 1) * limit
+const getUsers = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    let limit = parseInt(req.query.limit) || 4
+    const offset = (page - 1) * limit
 
-//     const result = await usersModel.select({ limit, offset })
+    const result = await usersModel.select({ limit, offset })
 
-//     const { rows: [count] } = await usersModel.countUser()
-//     const totalData = parseInt(count.total)
+    const { rows: [count] } = await usersModel.countUser()
+    const totalData = parseInt(count.total)
 
-//     if (totalData < limit) {
-//       limit = totalData
-//     }
+    if (totalData < limit) {
+      limit = totalData
+    }
 
-//     if ((result.rows).length === 0) {
-//       notFoundRes(res, 404, 'Data not found')
-//     }
+    if ((result.rows).length === 0) {
+      notFoundRes(res, 404, 'Data not found')
+    }
 
-//     const totalPage = Math.ceil(totalData / limit)
-//     const pagination = {
-//       currentPage: page,
-//       dataPerPage: limit,
-//       totalData,
-//       totalPage
-//     }
+    const totalPage = Math.ceil(totalData / limit)
+    const pagination = {
+      currentPage: page,
+      dataPerPage: limit,
+      totalData,
+      totalPage
+    }
 
-//     for (let i = 0; i < totalData; i++) {
-//       // console.log(result.rows[i].user_password)
-//       delete result.rows[i].user_password
-//     }
+    for (let i = 0; i < totalData; i++) {
+      delete result.rows[i].password
+    }
 
-//     response(res, result.rows, 200, 'Get data success', pagination)
-//   } catch (error) {
-//     console.log(error)
-//     next(errorServer)
-//   }
-// }
+    response(res, result.rows, 200, 'Get data success', pagination)
+  } catch (error) {
+    console.log(error)
+    next(errorServer)
+  }
+}
 
-// const getProfileDetail = async (req, res, next) => {
-//   // const email = req.params.emailid
-//   const decode = req.decoded
-//   console.log(decode)
-//   const email = req.decoded.email
-//   // const { rows: [user] } = await usersModel.findByEmail(email)
-//   const { rows: [user] } = await usersModel.usersDetail(email)
+const getProfileDetail = async (req, res, next) => {
+  const email = req.decoded.email
+  const { rows: [user] } = await usersModel.usersDetail(email)
 
-//   if (user === undefined) {
-//     res.json({
-//       message: 'invalid token'
-//     })
-//     return
-//   }
+  if (user === undefined) {
+    res.json({
+      message: 'invalid token'
+    })
+    return
+  }
 
-//   delete user.user_password
-//   response(res, user, 200, 'Get Data success')
-// }
+  delete user.password
+  response(res, user, 200, 'Get Data success')
+}
 
 const insertUsers = async (req, res, next) => {
-  console.log(req.file.filename)
   const { name, email: emailID, password, phone } = req.body
   let photo = []
   const activationID = 0
@@ -93,8 +87,6 @@ const insertUsers = async (req, res, next) => {
     photo
   }
 
-  console.log(data)
-
   try {
     // Check Email in users table
     const { rows: [count1] } = await usersModel.checkExisting(emailID)
@@ -111,8 +103,6 @@ const insertUsers = async (req, res, next) => {
     }
 
     // sendEmail(emailID)
-    console.log(data)
-    console.log('data tertangkap regis bisa dilanjutkan')
 
     await usersModel.insert(data)
     delete data.userPassword
@@ -127,7 +117,6 @@ const loginUsers = async (req, res, next) => {
   try {
     const { email, password: userPassword } = req.body
     const { rows: [user] } = await usersModel.findByEmail(email)
-    // const user = rows[0]
 
     if (!user) {
       return response(res, null, 403, 'wrong email or password')
@@ -140,14 +129,13 @@ const loginUsers = async (req, res, next) => {
 
     delete user.password
 
-    console.log(user)
-
     const payload = {
       email: user.email,
       id: user.id,
       role: 1,
       status: user.status
     }
+
     // generate token
     user.token = generateToken(payload)
     user.RefreshToken = generateRefreshToken(payload)
@@ -212,8 +200,6 @@ const userActivate = async (req, res, next) => {
 }
 
 const updateUsers = async (req, res, next) => {
-  // const emailID = req.params.emailid
-  // console.log(req.file.filename)
   const files = req.file
   const emailID = req.decoded.email
   const { name, email, password, phone, activationStatus, photo } = req.body
@@ -285,11 +271,11 @@ const deleteUsers = async (req, res, next) => {
 }
 
 module.exports = {
-  // getUsers,
+  getUsers,
   insertUsers,
   deleteUsers,
   updateUsers,
-  // getProfileDetail,
+  getProfileDetail,
   loginUsers,
   userActivate,
   refreshToken

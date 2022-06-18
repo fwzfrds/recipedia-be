@@ -1,11 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const {
-  // getUsers,
+  getUsers,
   insertUsers,
   updateUsers,
   // deleteUsers,
-  // getProfileDetail,
+  getProfileDetail,
   loginUsers
   // userActivate,
   // refreshToken
@@ -16,9 +16,9 @@ const uploadPhoto = require('../middlewares/uploadPhoto')
 
 //  ----> /users.....
 router
-  // .get('/', getUsers)
+  .get('/', getUsers)
   // .get('/active/:token', isTokenValid, userActivate)
-  // .get('/profile', protect, isUser, getProfileDetail)
+  .get('/profile', protect, isUser, getProfileDetail)
   .post('/registration', uploadPhoto.single('photo'), insertUsers)
   .post('/login', loginUsers)
   // .post('/refresh-token', refreshToken)
