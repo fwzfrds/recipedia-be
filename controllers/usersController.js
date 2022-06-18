@@ -213,30 +213,48 @@ const userActivate = async (req, res, next) => {
 
 const updateUsers = async (req, res, next) => {
   // const emailID = req.params.emailid
+  // console.log(req.file.filename)
+  const files = req.file
   const emailID = req.decoded.email
-  const { firstName, lastName, email, userPassword, phone, activationStatus, gender, birth, userAddress } = req.body
+  const { name, email, password, phone, activationStatus, photo } = req.body
   const updatedAt = new Date()
 
+  const { rows: [userDetail] } = await usersModel.usersDetail(emailID)
+  delete userDetail.password
+  const previousPhoto = (userDetail.photo).replace('http://localhost:4000/img/', '')
+
+  // console.log(files)
+  if (files !== undefined) {
+    console.log('Deleting Previous Photo')
+    fs.unlink(`./upload/${previousPhoto}`, function (err) {
+      if (err) {
+        console.log('error while deleting the file ' + err)
+      }
+    })
+  }
+
   const data = {
-    firstName,
-    lastName,
+    name,
     email,
-    userPassword,
+    password,
     phone,
     activationStatus,
-    gender,
-    birth,
-    userAddress,
+    photo,
     updatedAt
   }
 
-  try {
-    // const { rows: [count] } = await usersModel.checkExisting(emailID)
-    // const result = parseInt(count.total)
+  // upload single image
+  if (req.file !== undefined) {
+    data.photo = `http://${req.get('host')}/img/${req.file.filename}`
+  }
 
-    // if (result === 0) {
-    //   return notFoundRes(res, 404, 'Data not found')
-    // }
+  try {
+    const { rows: [count] } = await usersModel.checkExisting(emailID)
+    const result = parseInt(count.total)
+
+    if (result === 0) {
+      return notFoundRes(res, 404, 'Data not found')
+    }
 
     await usersModel.updateProfile(data, emailID)
 
