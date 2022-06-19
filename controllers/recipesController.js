@@ -5,11 +5,36 @@ const createError = require('http-errors')
 const { v4: uuidv4 } = require('uuid')
 // const bcrypt = require('bcryptjs')
 // const jwt = require('jsonwebtoken')
-// const { response, notFoundRes } = require('../helper/common')
-const { response } = require('../helper/common')
+const { response, notFoundRes } = require('../helper/common')
 // const { generateToken, generateRefreshToken } = require('../helper/authHelper')
 
 const errorServer = new createError.InternalServerError()
+
+const getRecipeDetail = async (req, res) => {
+  try {
+    const recipeID = req.params.id
+    console.log(recipeID)
+    const result = await recipesModel.recipeDetail(recipeID)
+    // console.log(result.rows)
+
+    if ((result.rows).length === 0) {
+      return notFoundRes(res, 404, 'Data not found')
+    }
+
+    // const image = result.rows[0].image
+    // console.log(image)
+    // if (image) {
+    //   result.rows[0].image = image.split(',')
+    // }
+
+    // console.log(result.rows[0].image)
+    // Sampai sini backend harus diperbaiki bagian image kalau satu
+
+    response(res, result.rows[0], 200, 'Get data success')
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 const insertRecipe = async (req, res, next) => {
   console.log(req.files)
@@ -80,5 +105,6 @@ const insertRecipe = async (req, res, next) => {
 }
 
 module.exports = {
-  insertRecipe
+  insertRecipe,
+  getRecipeDetail
 }

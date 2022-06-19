@@ -1,7 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const {
-  insertRecipe
+  insertRecipe,
+  getRecipeDetail
 } = require('../controllers/recipesController')
 const { protect, isUser } = require('../middlewares/authMiddleware')
 // const { protect, isUser, isTokenValid } = require('../middlewares/authMiddleware')
@@ -11,7 +12,7 @@ const uploadAssets = require('../middlewares/uploadAssets')
 router
 //   .get('/', getUsers)
   // .get('/active/:token', isTokenValid, userActivate)
-//   .get('/profile', protect, isUser, getProfileDetail)
+  .get('/detail/:id', getRecipeDetail)
   .post('/add', protect, isUser, uploadAssets, insertRecipe)
 //   .post('/add', protect, uploadPhoto.single('photo'), uploadVideo.single('video'), insertRecipe)
 //   .post('/login', loginUsers)

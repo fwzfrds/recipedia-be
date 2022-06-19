@@ -24,7 +24,25 @@ const insertRecipeAssets = ({ idRecipe, photo, video }) => {
   })
 }
 
+// const getProductById = (id) => {
+//     console.log(id)
+//     return pool.query('SELECT products.*, categories.name AS name_category FROM products INNER JOIN categories ON products.id_category = categories.id WHERE products.id = $1', [id])
+//   }
+
+const recipeDetail = (recipeID) => {
+  return new Promise((resolve, reject) => {
+    pool.query(`SELECT recipes.*, assets.image AS photo, assets.video FROM recipes INNER JOIN assets ON recipes.id = assets.id_recipe WHERE recipes.id = '${recipeID}';`, (error, result) => {
+      if (!error) {
+        resolve(result)
+      } else {
+        reject(error)
+      }
+    })
+  })
+}
+
 module.exports = {
   insertRecipeData,
-  insertRecipeAssets
+  insertRecipeAssets,
+  recipeDetail
 }
