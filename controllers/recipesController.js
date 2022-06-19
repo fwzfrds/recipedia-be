@@ -231,18 +231,35 @@ const updateRecipe = async (req, res, next) => {
 const deleteRecipe = async (req, res, next) => {
   const recipeID = req.params.id
 
-  try {
-    const { rows: [count] } = await recipesModel.checkExisting(recipeID)
+  const { rows: [recipeDetail] } = await recipesModel.recipeDetail(recipeID)
 
-    const result = parseInt(count.total)
-
-    if (result === 0) {
-      return notFoundRes(res, 404, 'Data not found, you cannot delete the data which is not exist')
+  if (recipeDetail) {
+    if (recipeDetail.photo) {
+      const photo = (recipeDetail.photo).replace('http://localhost:4000/img/recipe/photo/', '')
+      fs.unlink(`./upload/recipe/photo/${photo}`, function (err) {
+        if (err) {
+          console.log('error while deleting the file ' + err)
+        }
+      })
     }
 
-    recipesModel.deleteRecipe(recipeID)
+    if (recipeDetail.video) {
+      const video = (recipeDetail.video).replace('http://localhost:4000/video/recipe/video/', '')
+      fs.unlink(`./upload/recipe/video/${video}`, function (err) {
+        if (err) {
+          console.log('error while deleting the file ' + err)
+        }
+      })
+    }
+  } else {
+    return notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
+  }
 
-    response(res, recipeID, 200, 'Delete recipe success')
+  try {
+    recipesModel.deleteRecipeData(recipeID)
+    recipesModel.deleteRecipeAssets(recipeID)
+
+    response(res, recipeDetail.title, 200, 'Delete recipe success')
   } catch (error) {
     console.log(error)
     next(errorServer)

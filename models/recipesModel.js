@@ -88,8 +88,12 @@ const updateRecipeAssets = ({ photo, video, updatedAt }, recipeID) => {
   })
 }
 
-const deleteRecipe = (recipeID) => {
+const deleteRecipeData = (recipeID) => {
   return pool.query('DELETE FROM recipes WHERE id = $1', [recipeID])
+}
+
+const deleteRecipeAssets = (recipeID) => {
+  return pool.query('DELETE FROM assets WHERE id_recipe = $1', [recipeID])
 }
 
 module.exports = {
@@ -101,5 +105,6 @@ module.exports = {
   updateRecipeData,
   updateRecipeAssets,
   checkExisting,
-  deleteRecipe
+  deleteRecipeData,
+  deleteRecipeAssets
 }
