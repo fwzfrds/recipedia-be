@@ -12,10 +12,14 @@ const getAllRecipe = async (req, res, next) => {
     let limit = parseInt(req.query.limit) || 4
     const offset = (page - 1) * limit
 
-    const result = await recipesModel.getAllRecipe({ limit, offset })
+    const sortBy = req.query.sortby || 'random ()'
+    const sortOrder = req.query.sortorder || ''
+    const search = req.query.search || ''
+
+    const result = await recipesModel.getAllRecipe({ limit, offset, sortBy, sortOrder, search })
 
     const { rows: [count] } = await recipesModel.countRecipes()
-    const totalData = parseInt(count.total)
+    const totalData = search === '' ? parseInt(count.total) : (result.rows).length
 
     if (totalData < limit) {
       limit = totalData
@@ -58,13 +62,6 @@ const getRecipeDetail = async (req, res) => {
 }
 
 const insertRecipe = async (req, res, next) => {
-  console.log(req.files)
-  console.log(req.files.photo[0].filename)
-  console.log(req.files.photo[0].filename)
-  console.log(req.files.video)
-  console.log(req.files.video)
-  const decode = req.decoded
-  console.log(decode)
   const id = req.decoded.id
   const { title, ingredients } = req.body
   let photo
@@ -126,6 +123,8 @@ const insertRecipe = async (req, res, next) => {
 }
 
 const updateRecipe = async (req, res, next) => {
+  const userID = req.decoded.id
+  console.log(userID)
   const recipeID = req.params.id
   const { title, ingredients } = req.body
   const updatedAt = new Date()
@@ -197,7 +196,7 @@ const updateRecipe = async (req, res, next) => {
   try {
     console.log(recipeUpdatedData)
     if (recipeUpdatedData.title || recipeUpdatedData.ingredients) {
-      await recipesModel.updateRecipeData(recipeUpdatedData, recipeID)
+      await recipesModel.updateRecipeData(recipeUpdatedData, recipeID, userID)
     }
 
     console.log(recipeUpdateAssets)
@@ -229,9 +228,31 @@ const updateRecipe = async (req, res, next) => {
   }
 }
 
+const deleteRecipe = async (req, res, next) => {
+  const recipeID = req.params.id
+
+  try {
+    const { rows: [count] } = await recipesModel.checkExisting(recipeID)
+
+    const result = parseInt(count.total)
+
+    if (result === 0) {
+      return notFoundRes(res, 404, 'Data not found, you cannot delete the data which is not exist')
+    }
+
+    recipesModel.deleteRecipe(recipeID)
+
+    response(res, recipeID, 200, 'Delete recipe success')
+  } catch (error) {
+    console.log(error)
+    next(errorServer)
+  }
+}
+
 module.exports = {
   getAllRecipe,
   insertRecipe,
   getRecipeDetail,
-  updateRecipe
+  updateRecipe,
+  deleteRecipe
 }

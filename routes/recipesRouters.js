@@ -4,7 +4,8 @@ const {
   insertRecipe,
   getRecipeDetail,
   getAllRecipe,
-  updateRecipe
+  updateRecipe,
+  deleteRecipe
 } = require('../controllers/recipesController')
 const { protect, isUser } = require('../middlewares/authMiddleware')
 // const { protect, isUser, isTokenValid } = require('../middlewares/authMiddleware')
@@ -20,6 +21,6 @@ router
 //   .post('/login', loginUsers)
   // .post('/refresh-token', refreshToken)
   .put('/edit/:id', protect, isUser, uploadAssets, updateRecipe)
-  // .delete('/:emailid', deleteUsers)
+  .delete('/:id', protect, isUser, deleteRecipe)
 
 module.exports = router

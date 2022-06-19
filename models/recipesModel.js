@@ -1,8 +1,8 @@
 const pool = require('../db')
 
-const getAllRecipe = ({ limit, offset }) => {
+const getAllRecipe = ({ limit, offset, sortBy, sortOrder, search }) => {
   return new Promise((resolve, reject) => {
-    pool.query('SELECT recipes.*, assets.image AS photo, assets.video, users.name AS recipe_by FROM recipes INNER JOIN assets ON recipes.id = assets.id_recipe INNER JOIN users ON recipes.id_user = users.id LIMIT $1 OFFSET $2', [limit, offset], (err, result) => {
+    pool.query(`SELECT recipes.*, assets.image AS photo, assets.video, users.name AS recipe_by FROM recipes INNER JOIN assets ON recipes.id = assets.id_recipe INNER JOIN users ON recipes.id_user = users.id WHERE title ILIKE '%${search}%' ORDER BY ${sortBy} ${sortOrder} LIMIT $1 OFFSET $2`, [limit, offset], (err, result) => {
       if (!err) {
         resolve(result)
       } else {
@@ -52,13 +52,13 @@ const recipeDetail = (recipeID) => {
   })
 }
 
-const updateRecipeData = ({ title, ingredients, updatedAt }, recipeID) => {
+const updateRecipeData = ({ title, ingredients, updatedAt }, recipeID, userID) => {
   return new Promise((resolve, reject) => {
     pool.query(`UPDATE recipes SET 
                 title = COALESCE($1, title), 
                 ingredients = COALESCE($2, ingredients),   
                 updated_at = COALESCE($3, updated_at) 
-                WHERE id = $4;`, [title, ingredients, updatedAt, recipeID], (err, result) => {
+                WHERE id = $4 AND id_user = $5;`, [title, ingredients, updatedAt, recipeID, userID], (err, result) => {
       if (!err) {
         resolve(result)
       } else {
@@ -66,6 +66,10 @@ const updateRecipeData = ({ title, ingredients, updatedAt }, recipeID) => {
       }
     })
   })
+}
+
+const checkExisting = (recipeID) => {
+  return pool.query(`SELECT COUNT(*) AS total FROM recipes WHERE id = '${recipeID}';`)
 }
 
 const updateRecipeAssets = ({ photo, video, updatedAt }, recipeID) => {
@@ -84,6 +88,10 @@ const updateRecipeAssets = ({ photo, video, updatedAt }, recipeID) => {
   })
 }
 
+const deleteRecipe = (recipeID) => {
+  return pool.query('DELETE FROM recipes WHERE id = $1', [recipeID])
+}
+
 module.exports = {
   getAllRecipe,
   countRecipes,
@@ -91,5 +99,7 @@ module.exports = {
   insertRecipeAssets,
   recipeDetail,
   updateRecipeData,
-  updateRecipeAssets
+  updateRecipeAssets,
+  checkExisting,
+  deleteRecipe
 }
