@@ -1,14 +1,44 @@
 const recipesModel = require('../models/recipesModel')
 const fs = require('fs')
-// const adminModel = require('../models/adminModel')
 const createError = require('http-errors')
 const { v4: uuidv4 } = require('uuid')
-// const bcrypt = require('bcryptjs')
-// const jwt = require('jsonwebtoken')
 const { response, notFoundRes } = require('../helper/common')
-// const { generateToken, generateRefreshToken } = require('../helper/authHelper')
 
 const errorServer = new createError.InternalServerError()
+
+const getAllRecipe = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    let limit = parseInt(req.query.limit) || 4
+    const offset = (page - 1) * limit
+
+    const result = await recipesModel.getAllRecipe({ limit, offset })
+
+    const { rows: [count] } = await recipesModel.countRecipes()
+    const totalData = parseInt(count.total)
+
+    if (totalData < limit) {
+      limit = totalData
+    }
+
+    if ((result.rows).length === 0) {
+      notFoundRes(res, 404, 'Data not found')
+    }
+
+    const totalPage = Math.ceil(totalData / limit)
+    const pagination = {
+      currentPage: page,
+      dataPerPage: limit,
+      totalData,
+      totalPage
+    }
+
+    response(res, result.rows, 200, 'Get data success', pagination)
+  } catch (error) {
+    console.log(error)
+    next(errorServer)
+  }
+}
 
 const getRecipeDetail = async (req, res) => {
   try {
@@ -20,15 +50,6 @@ const getRecipeDetail = async (req, res) => {
     if ((result.rows).length === 0) {
       return notFoundRes(res, 404, 'Data not found')
     }
-
-    // const image = result.rows[0].image
-    // console.log(image)
-    // if (image) {
-    //   result.rows[0].image = image.split(',')
-    // }
-
-    // console.log(result.rows[0].image)
-    // Sampai sini backend harus diperbaiki bagian image kalau satu
 
     response(res, result.rows[0], 200, 'Get data success')
   } catch (error) {
@@ -104,7 +125,113 @@ const insertRecipe = async (req, res, next) => {
   }
 }
 
+const updateRecipe = async (req, res, next) => {
+  const recipeID = req.params.id
+  const { title, ingredients } = req.body
+  const updatedAt = new Date()
+  let photo
+  let video
+
+  const { rows: [recipeDetail] } = await recipesModel.recipeDetail(recipeID)
+  if (!recipeDetail) {
+    notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
+    if (req.files.photo) {
+      fs.unlink(`./upload/recipe/photo/${req.files.photo[0].filename}`, function (err) {
+        if (err) {
+          console.log('error while deleting the file ' + err)
+        }
+      })
+    }
+
+    if (req.files.video) {
+      fs.unlink(`./upload/recipe/video/${req.files.video[0].filename}`, function (err) {
+        if (err) {
+          console.log('error while deleting the file ' + err)
+        }
+      })
+    }
+    return
+  }
+
+  //   upload single image
+  if (req.files.photo) {
+    photo = `http://${req.get('host')}/img/recipe/photo/${req.files.photo[0].filename}`
+    console.log('Deleting Previous Photo')
+    const previousPhoto = (recipeDetail.photo).replace('http://localhost:4000/img/recipe/photo', '')
+    fs.unlink(`./upload/recipe/photo/${previousPhoto}`, function (err) {
+      if (err) {
+        console.log('error while deleting the file ' + err)
+      }
+    })
+  }
+
+  //   upload single video
+  if (req.files.video) {
+    video = `http://${req.get('host')}/video/recipe/video/${req.files.video[0].filename}`
+    console.log('Deleting Previous Video')
+    const previousVideo = (recipeDetail.photo).replace('http://localhost:4000/video/recipe/video', '')
+    fs.unlink(`./upload/recipe/video/${previousVideo}`, function (err) {
+      if (err) {
+        console.log('error while deleting the file ' + err)
+      }
+    })
+  }
+
+  const recipeUpdatedData = {
+    title,
+    ingredients,
+    updatedAt
+  }
+
+  const recipeUpdateAssets = {
+    photo,
+    video,
+    updatedAt
+  }
+
+  const updatedData = {
+    ...recipeUpdatedData,
+    ...recipeUpdateAssets
+  }
+
+  try {
+    console.log(recipeUpdatedData)
+    if (recipeUpdatedData.title || recipeUpdatedData.ingredients) {
+      await recipesModel.updateRecipeData(recipeUpdatedData, recipeID)
+    }
+
+    console.log(recipeUpdateAssets)
+    if (recipeUpdateAssets.photo || recipeUpdateAssets.video) {
+      await recipesModel.updateRecipeAssets(recipeUpdateAssets, recipeID)
+    }
+
+    response(res, updatedData, 201, 'Add new recipe success')
+  } catch (error) {
+    console.log(error)
+    if (error) {
+      if (photo) {
+        const errorPhoto = (photo).replace('http://localhost:4000/img/recipe/photo', '')
+        fs.unlink(`./upload/recipe/photo/${errorPhoto}`, function (err) {
+          if (err) {
+            console.log('error while deleting the file ' + err)
+          }
+        })
+      } else if (video) {
+        const errorVideo = (video).replace('http://localhost:4000/video/recipe/video', '')
+        fs.unlink(`./upload/recipe/video/${errorVideo}`, function (err) {
+          if (err) {
+            console.log('error while deleting the file ' + err)
+          }
+        })
+      }
+    }
+    next(errorServer)
+  }
+}
+
 module.exports = {
+  getAllRecipe,
   insertRecipe,
-  getRecipeDetail
+  getRecipeDetail,
+  updateRecipe
 }
