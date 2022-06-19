@@ -31,6 +31,24 @@ CREATE TABLE categories(
     updated_at TIMESTAMP
 );
 
+CREATE TABLE recipes(
+    id VARCHAR(64) PRIMARY KEY NOT NULL,
+    id_user VARCHAR(64) NOT NULL,
+    title VARCHAR NOT NULL,
+    ingredients VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE assets(
+    id INT PRIMARY KEY NOT NULL GENERATED ALWAYS AS IDENTITY,
+    id_recipe VARCHAR(64) NOT NULL,
+    image VARCHAR,
+    video VARCHAR,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
 CREATE TABLE admins(
     id VARCHAR(64) NOT NULL,
     name VARCHAR(64) NOT NULL,

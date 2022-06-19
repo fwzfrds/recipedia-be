@@ -25,6 +25,7 @@ app.use(xss())
 app.use('/v1', mainRoute)
 
 app.use('/img', express.static(path.join(__dirname, '/upload')))
+app.use('/video', express.static(path.join(__dirname, '/upload')))
 app.all('*', (req, res, next) => {
   // Cara 1 : bawaan package
   next(new createError.NotFound())

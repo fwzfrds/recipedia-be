@@ -52,7 +52,7 @@ const isTokenValid = (req, res, next) => {
 }
 
 const isUser = (req, res, next) => {
-  if (req.decoded.status === 1) {
+  if (req.decoded.status === 0) {
     return next(createError(400, 'Your account has not been activated, please check your email!'))
   }
   if (req.decoded.role !== 1) {

@@ -14,7 +14,7 @@ const maxSize = 2 * 1024 * 1024 // 2mb
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg' || file.mimetype === 'video/mp4') {
+    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
       cb(null, true)
     } else {
       cb(null, false)
