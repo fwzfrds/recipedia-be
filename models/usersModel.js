@@ -35,6 +35,18 @@ const findByEmail = (email) => {
   })
 }
 
+const findByID = (email) => {
+  return new Promise((resolve, reject) => {
+    pool.query(`SELECT * FROM users WHERE email = '${email}';`, (error, result) => {
+      if (!error) {
+        resolve(result)
+      } else {
+        reject(error)
+      }
+    })
+  })
+}
+
 const insert = ({ id, name, email, userPassword, phone, activationID, photo }) => {
   return new Promise((resolve, reject) => {
     pool.query('INSERT INTO users(id, name, email, password, phone, status, photo)VALUES($1, $2, $3, $4, $5, $6, $7)', [id, name, email, userPassword, phone, activationID, photo], (err, result) => {
@@ -129,6 +141,7 @@ module.exports = {
   countUser,
   checkExisting,
   findByEmail,
+  findByID,
   usersDetail,
   activateStatus
 }

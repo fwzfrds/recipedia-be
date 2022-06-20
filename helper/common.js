@@ -13,6 +13,9 @@ const notFoundRes = (res, status, message) => {
   resultPrint.status = 'Not Found'
   resultPrint.message = message || null
   resultPrint.statusCode = status
+  if (status === 403) {
+    resultPrint.status = 'Access Denied'
+  }
   res.status(status).json(resultPrint)
 }
 
