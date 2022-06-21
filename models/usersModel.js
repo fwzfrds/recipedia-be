@@ -64,30 +64,24 @@ const checkExisting = (emailID) => {
 }
 
 const activateStatus = ({
-  firstName,
-  lastName,
+  name,
   email,
-  userPassword,
+  password,
   phone,
   activationStatus,
-  gender,
-  birth,
-  userAddress,
-  activatedAt
+  photo,
+  updatedAt
 }, emailID) => {
   return new Promise((resolve, reject) => {
     pool.query(`UPDATE users SET 
-                first_name = COALESCE($1, first_name), 
-                last_name = COALESCE($2, last_name), 
-                email = COALESCE($3, email),  
-                user_password = COALESCE($4, user_password),  
-                phone = COALESCE($5, phone),  
-                id_status = COALESCE($6, id_status),  
-                id_gender = COALESCE($7, id_gender),  
-                birth = COALESCE($8, birth),  
-                user_address = COALESCE($9, user_address) ,
-                activated_at = COALESCE($10, activated_at) 
-                WHERE email = $11;`, [firstName, lastName, email, userPassword, phone, activationStatus, gender, birth, userAddress, activatedAt, emailID], (err, result) => {
+                name = COALESCE($1, name), 
+                email = COALESCE($2, email),  
+                password = COALESCE($3, password),  
+                phone = COALESCE($4, phone),  
+                status = COALESCE($5, status),  
+                photo = COALESCE($6, photo),  
+                updated_at = COALESCE($7, updated_at) 
+                WHERE email = $8;`, [name, email, password, phone, activationStatus, photo, updatedAt, emailID], (err, result) => {
       if (!err) {
         resolve(result)
       } else {

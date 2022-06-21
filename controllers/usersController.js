@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { response, notFoundRes } = require('../helper/common')
 const { generateToken, generateRefreshToken } = require('../helper/authHelper')
-// const { sendEmail } = require('../helper/emailActivation')
+const { sendEmail } = require('../helper/emailActivation')
 
 const errorServer = new createError.InternalServerError()
 
@@ -66,7 +66,7 @@ const getProfileDetail = async (req, res, next) => {
 
 const insertUsers = async (req, res, next) => {
   const { name, email: emailID, password, phone } = req.body
-  let photo = []
+  let photo
   const activationID = 0
 
   const salt = bcrypt.genSaltSync(10)
@@ -102,7 +102,7 @@ const insertUsers = async (req, res, next) => {
       return
     }
 
-    // sendEmail(emailID)
+    sendEmail(emailID)
 
     await usersModel.insert(data)
     delete data.userPassword
@@ -172,19 +172,11 @@ const userActivate = async (req, res, next) => {
   try {
     const emailID = req.decoded.email
     console.log(emailID)
-    const { firstName, lastName, email, userPassword, phone, gender, birth, userAddress } = req.body
+    // const { firstName, lastName, email, userPassword, phone, gender, birth, userAddress } = req.body
     const activatedAt = new Date()
 
     const data = {
-      firstName,
-      lastName,
-      email,
-      userPassword,
-      phone,
-      activationStatus: 2,
-      gender,
-      birth,
-      userAddress,
+      activationStatus: 1,
       activatedAt
     }
 
@@ -192,7 +184,8 @@ const userActivate = async (req, res, next) => {
 
     await usersModel.activateStatus(data, emailID)
 
-    response(res, activatedAt, 200, 'Congrats ! your account has been activated')
+    res.redirect('https://www.linkedin.com/in/muhammad-fawwaz/')
+    // response(res, activatedAt, 200, 'Congrats ! your account has been activated')
   } catch (error) {
     console.log(error)
     next(new createError.InternalServerError())

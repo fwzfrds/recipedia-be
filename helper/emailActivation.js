@@ -3,11 +3,13 @@ const jwt = require('jsonwebtoken')
 const sendEmail = async (email) => {
   try {
     const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
+      host: 'smtp.gmail.com',
       port: 587,
+      secure: false,
+      requireTLS: true,
       auth: {
-        user: process.env.EMAIL_FOR_SENDEMAIL, // generated ethereal user
-        pass: process.env.PASS_SEND_EMAIL // generated ethereal password
+        user: process.env.EMAIL_FOR_SENDEMAIL,
+        pass: process.env.PASS_SEND_EMAIL
       }
     })
     const token = jwt.sign({ email }, process.env.SECRET_KEY_JWT, {
@@ -49,7 +51,7 @@ const sendEmail = async (email) => {
         </head>
         <body>
             <div class="container">
-                <a href="https://blanja-web-api.herokuapp.com/v1/users/active/${token}">klik aktif</a>
+                <a href="http://localhost:4000/v1/users/active/${token}">klik aktif</a>
             </div>
         </body>
         </html>` // html body
