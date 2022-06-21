@@ -26,12 +26,30 @@ const getLikedRecipe = ({ limit, offset, sortBy, sortOrder, search, idUser }) =>
   })
 }
 
+const getSavedRecipe = ({ limit, offset, sortBy, sortOrder, search, idUser }) => {
+  console.log(idUser)
+  console.log(typeof idUser)
+  return new Promise((resolve, reject) => {
+    pool.query(`SELECT saved.*, recipes.title, recipes.ingredients, assets.image AS photo, assets.video, users.name AS recipe_by FROM saved INNER JOIN recipes ON saved.id_recipe = recipes.id INNER JOIN assets ON saved.id_recipe = assets.id_recipe INNER JOIN users ON saved.id_user = users.id WHERE saved.id_user = ${idUser} AND title ILIKE '%${search}%' ORDER BY ${sortBy} ${sortOrder} LIMIT $1 OFFSET $2;`, [limit, offset], (err, result) => {
+      if (!err) {
+        resolve(result)
+      } else {
+        reject(new Error(err))
+      }
+    })
+  })
+}
+
 const countRecipes = () => {
   return pool.query('SELECT COUNT(*) AS total FROM recipes')
 }
 
 const countLikedRecipes = (idUser) => {
   return pool.query(`SELECT COUNT(*) AS total FROM liked WHERE id_user = ${idUser};`)
+}
+
+const countSavedRecipes = (idUser) => {
+  return pool.query(`SELECT COUNT(*) AS total FROM saved WHERE id_user = ${idUser};`)
 }
 
 const insertRecipeData = ({ id, idUser, title, ingredients }) => {
@@ -61,6 +79,18 @@ const insertRecipeAssets = ({ idRecipe, photo, video }) => {
 const insertLikedRecipe = ({ idRecipe, idUser }) => {
   return new Promise((resolve, reject) => {
     pool.query('INSERT INTO liked(id_recipe, id_user)VALUES($1, $2)', [idRecipe, idUser], (err, result) => {
+      if (!err) {
+        resolve(result)
+      } else {
+        reject(new Error(err))
+      }
+    })
+  })
+}
+
+const insertSavedRecipe = ({ idRecipe, idUser }) => {
+  return new Promise((resolve, reject) => {
+    pool.query('INSERT INTO saved(id_recipe, id_user)VALUES($1, $2)', [idRecipe, idUser], (err, result) => {
       if (!err) {
         resolve(result)
       } else {
@@ -106,6 +136,10 @@ const checkLikedExisting = (recipeID, idUser) => {
   return pool.query(`SELECT COUNT(*) AS total FROM liked WHERE id_recipe = '${recipeID}' AND id_user = ${idUser};`)
 }
 
+const checkSavedExisting = (recipeID, idUser) => {
+  return pool.query(`SELECT COUNT(*) AS total FROM saved WHERE id_recipe = '${recipeID}' AND id_user = ${idUser};`)
+}
+
 const updateRecipeAssets = ({ photo, video, updatedAt }, recipeID) => {
   return new Promise((resolve, reject) => {
     pool.query(`UPDATE assets SET 
@@ -133,16 +167,20 @@ const deleteRecipeAssets = (recipeID) => {
 module.exports = {
   getAllRecipe,
   getLikedRecipe,
+  getSavedRecipe,
   countRecipes,
   countLikedRecipes,
+  countSavedRecipes,
   insertRecipeData,
   insertRecipeAssets,
   insertLikedRecipe,
+  insertSavedRecipe,
   recipeDetail,
   updateRecipeData,
   updateRecipeAssets,
   checkExisting,
   checkLikedExisting,
+  checkSavedExisting,
   deleteRecipeData,
   deleteRecipeAssets
 }

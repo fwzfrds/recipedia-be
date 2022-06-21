@@ -139,7 +139,31 @@ const insertLikedRecipe = async (req, res, next) => {
 
   try {
     await recipesModel.insertLikedRecipe(data)
-    response(res, data, 201, 'Add new recipe success')
+    response(res, data, 201, 'The recipe has been added to liked list')
+  } catch (error) {
+    console.log(error)
+    next(errorServer)
+  }
+}
+
+const insertSavedRecipe = async (req, res, next) => {
+  const id = req.decoded.id
+  const { idRecipe } = req.body
+  const idUser = id
+
+  const { rows: [count] } = await recipesModel.checkSavedExisting(idRecipe, `'${idUser}'`)
+  if (count.total >= 1) {
+    return notFoundRes(res, 403, 'The Recipe is already in your list')
+  }
+
+  const data = {
+    idRecipe,
+    idUser
+  }
+
+  try {
+    await recipesModel.insertSavedRecipe(data)
+    response(res, data, 201, 'The recipe has been added to saved list')
   } catch (error) {
     console.log(error)
     next(errorServer)
@@ -162,6 +186,47 @@ const getLikedRecipe = async (req, res, next) => {
     const result = await recipesModel.getLikedRecipe({ limit, offset, sortBy, sortOrder, search, idUser })
 
     const { rows: [count] } = await recipesModel.countLikedRecipes(idUser)
+    const totalData = search === '' ? parseInt(count.total) : (result.rows).length
+
+    if (totalData < limit) {
+      limit = totalData
+    }
+
+    if ((result.rows).length === 0) {
+      notFoundRes(res, 404, 'Data not found')
+    }
+
+    const totalPage = Math.ceil(totalData / limit)
+    const pagination = {
+      currentPage: page,
+      dataPerPage: limit,
+      totalData,
+      totalPage
+    }
+
+    response(res, result.rows, 200, 'Get data success', pagination)
+  } catch (error) {
+    console.log(error)
+    next(errorServer)
+  }
+}
+
+const getSavedRecipe = async (req, res, next) => {
+  const idUser = (`'${req.decoded.id}'`)
+  console.log(idUser)
+
+  try {
+    const page = parseInt(req.query.page) || 1
+    let limit = parseInt(req.query.limit) || 4
+    const offset = (page - 1) * limit
+
+    const sortBy = req.query.sortby || 'random ()'
+    const sortOrder = req.query.sortorder || ''
+    const search = req.query.search || ''
+
+    const result = await recipesModel.getSavedRecipe({ limit, offset, sortBy, sortOrder, search, idUser })
+
+    const { rows: [count] } = await recipesModel.countSavedRecipes(idUser)
     const totalData = search === '' ? parseInt(count.total) : (result.rows).length
 
     if (totalData < limit) {
@@ -336,7 +401,9 @@ module.exports = {
   insertRecipe,
   getRecipeDetail,
   getLikedRecipe,
+  getSavedRecipe,
   updateRecipe,
   insertLikedRecipe,
+  insertSavedRecipe,
   deleteRecipe
 }
