@@ -9,17 +9,22 @@ const errorServer = new createError.InternalServerError()
 const getAllRecipe = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1
-    let limit = parseInt(req.query.limit) || 4
+    let limit = parseInt(req.query.limit) || 3
     const offset = (page - 1) * limit
 
-    const sortBy = req.query.sortby || 'random ()'
+    const sortBy = req.query.sortby || 'created_at'
     const sortOrder = req.query.sortorder || ''
     const search = req.query.search || ''
 
     const result = await recipesModel.getAllRecipe({ limit, offset, sortBy, sortOrder, search })
+    const resultCount = await recipesModel.getAllRecipe({ sortBy, sortOrder, search })
 
     const { rows: [count] } = await recipesModel.countRecipes()
-    const totalData = search === '' ? parseInt(count.total) : (result.rows).length
+    console.log(count)
+    console.log((result.rows).length)
+    console.log((resultCount.rows).length)
+    const totalData = search === '' ? parseInt(count.total) : (resultCount.rows).length
+    const dataInThisPage = (result.rows).length
 
     if (totalData < limit) {
       limit = totalData
@@ -32,6 +37,7 @@ const getAllRecipe = async (req, res, next) => {
     const totalPage = Math.ceil(totalData / limit)
     const pagination = {
       currentPage: page,
+      dataInThisPage,
       dataPerPage: limit,
       totalData,
       totalPage

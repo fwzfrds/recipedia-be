@@ -93,11 +93,13 @@ const insertUsers = async (req, res, next) => {
     const result1 = parseInt(count1.total)
 
     if (result1 !== 0) {
-      fs.unlink(`./upload/${req.file.filename}`, function (err) {
-        if (err) {
-          console.log('error while deleting the file ' + err)
-        }
-      })
+      if (req.file) {
+        fs.unlink(`./upload/${req.file.filename}`, function (err) {
+          if (err) {
+            console.log('error while deleting the file ' + err)
+          }
+        })
+      }
       notFoundRes(res, 403, 'Email has already been taken')
       return
     }
@@ -172,7 +174,6 @@ const userActivate = async (req, res, next) => {
   try {
     const emailID = req.decoded.email
     console.log(emailID)
-    // const { firstName, lastName, email, userPassword, phone, gender, birth, userAddress } = req.body
     const activatedAt = new Date()
 
     const data = {
@@ -184,7 +185,7 @@ const userActivate = async (req, res, next) => {
 
     await usersModel.activateStatus(data, emailID)
 
-    res.redirect('https://www.linkedin.com/in/muhammad-fawwaz/')
+    res.redirect('http://localhost:3000/home')
     // response(res, activatedAt, 200, 'Congrats ! your account has been activated')
   } catch (error) {
     console.log(error)
