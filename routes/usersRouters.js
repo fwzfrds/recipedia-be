@@ -12,6 +12,7 @@ const {
 } = require('../controllers/usersController')
 const { protect, isUser, isTokenValid } = require('../middlewares/authMiddleware')
 const uploadPhoto = require('../middlewares/uploadPhoto')
+const uploadCloud = require('../middlewares/uploadCloudinaryImg')
 
 //  ----> /users.....
 router
@@ -21,7 +22,8 @@ router
   .post('/registration', uploadPhoto.single('photo'), insertUsers)
   .post('/login', loginUsers)
   // .post('/refresh-token', refreshToken)
-  .put('/edit', protect, isUser, uploadPhoto.single('photo'), updateUsers)
+  // .put('/edit', protect, isUser, uploadPhoto.single('photo'), updateUsers)
+  .put('/edit', protect, isUser, uploadCloud.single('photo'), updateUsers)
   // .delete('/:emailid', deleteUsers)
 
 module.exports = router

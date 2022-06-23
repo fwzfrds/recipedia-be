@@ -1,13 +1,13 @@
 const multer = require('multer')
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    if (file.fieldname === 'photo') {
-      cb(null, './upload/recipe/photo')
-    } else {
-      cb(null, './upload/recipe/video')
-    }
-  },
+  // destination: function (req, file, cb) {
+  //   if (file.fieldname === 'photo') {
+  //     cb(null, './upload/recipe/photo')
+  //   } else {
+  //     cb(null, './upload/recipe/video')
+  //   }
+  // },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
     cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.')[1])

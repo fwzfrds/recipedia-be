@@ -3,6 +3,7 @@ const fs = require('fs')
 const createError = require('http-errors')
 const { v4: uuidv4 } = require('uuid')
 const { response, notFoundRes } = require('../helper/common')
+const cloudinary = require('../config/cloudinaryConfig')
 
 const errorServer = new createError.InternalServerError()
 
@@ -74,16 +75,18 @@ const insertRecipe = async (req, res, next) => {
   let video
   const idUser = id
   console.log(idUser)
+  let photoCloud
+  // let videoCloud
 
   //   upload single image
-  if (req.files.photo) {
-    photo = `http://${req.get('host')}/img/recipe/photo/${req.files.photo[0].filename}`
-  }
+  // if (req.files.photo) {
+  //   photo = `http://${req.get('host')}/img/recipe/photo/${req.files.photo[0].filename}`
+  // }
 
   //   upload single video
-  if (req.files.video) {
-    video = `http://${req.get('host')}/video/recipe/video/${req.files.video[0].filename}`
-  }
+  // if (req.files.video) {
+  //   video = `http://${req.get('host')}/video/recipe/video/${req.files.video[0].filename}`
+  // }
 
   const recipeData = {
     id: uuidv4(),
@@ -104,26 +107,46 @@ const insertRecipe = async (req, res, next) => {
   }
 
   try {
-    await recipesModel.insertRecipeData(recipeData)
-    await recipesModel.insertRecipeAssets(recipeAssets)
+  // Upload single ke Cloudinary
+    if (req.files.photo) {
+      photoCloud = req.files.photo[0].path
+
+      const url = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload(photoCloud, { folder: 'samples' }, function (error, result) {
+          if (result) {
+            resolve(result.url)
+          } else if (error) {
+            reject(error)
+          }
+        })
+      })
+
+      data.photo = url
+      console.log(photoCloud)
+    } else {
+      console.log('update profile without edit photo')
+    }
+
+    // await recipesModel.insertRecipeData(recipeData)
+    // await recipesModel.insertRecipeAssets(recipeAssets)
 
     response(res, data, 201, 'Add new recipe success')
   } catch (error) {
     console.log(error)
-    const errorPhoto = (photo).replace('http://localhost:4000/img/recipe/photo', '')
-    const errorVideo = (video).replace('http://localhost:4000/video/recipe/video', '')
-    if (error) {
-      fs.unlink(`./upload/recipe/photo/${errorPhoto}`, function (err) {
-        if (err) {
-          console.log('error while deleting the file ' + err)
-        }
-      })
-      fs.unlink(`./upload/recipe/video/${errorVideo}`, function (err) {
-        if (err) {
-          console.log('error while deleting the file ' + err)
-        }
-      })
-    }
+    // const errorPhoto = (photo).replace('http://localhost:4000/img/recipe/photo', '')
+    // const errorVideo = (video).replace('http://localhost:4000/video/recipe/video', '')
+    // if (error) {
+    //   fs.unlink(`./upload/recipe/photo/${errorPhoto}`, function (err) {
+    //     if (err) {
+    //       console.log('error while deleting the file ' + err)
+    //     }
+    //   })
+    //   fs.unlink(`./upload/recipe/video/${errorVideo}`, function (err) {
+    //     if (err) {
+    //       console.log('error while deleting the file ' + err)
+    //     }
+    //   })
+    // }
     next(errorServer)
   }
 }

@@ -14,6 +14,7 @@ const {
 const { protect, isUser } = require('../middlewares/authMiddleware')
 // const { protect, isUser, isTokenValid } = require('../middlewares/authMiddleware')
 const uploadAssets = require('../middlewares/uploadAssets')
+const uploadCloudinaryAssets = require('../middlewares/uploadCloudinaryAssets')
 
 //  ----> /users.....
 router
@@ -23,7 +24,8 @@ router
   // .get('/saved', protect, isUser, getLikedRecipe)
   // .get('/active/:token', isTokenValid, userActivate)
   .get('/detail/:id', getRecipeDetail)
-  .post('/add', protect, isUser, uploadAssets, insertRecipe)
+  // .post('/add', protect, isUser, uploadAssets, insertRecipe)
+  .post('/add', protect, isUser, uploadCloudinaryAssets, insertRecipe)
   .post('/liked', protect, isUser, insertLikedRecipe)
   .post('/saved', protect, isUser, insertSavedRecipe)
 //   .post('/add', protect, uploadPhoto.single('photo'), uploadVideo.single('video'), insertRecipe)

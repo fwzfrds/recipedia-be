@@ -8,6 +8,8 @@ const jwt = require('jsonwebtoken')
 const { response, notFoundRes } = require('../helper/common')
 const { generateToken, generateRefreshToken } = require('../helper/authHelper')
 const { sendEmail } = require('../helper/emailActivation')
+const cloudinary = require('../config/cloudinaryConfig')
+// const Formidable = require('formidable')
 
 const errorServer = new createError.InternalServerError()
 
@@ -185,7 +187,7 @@ const userActivate = async (req, res, next) => {
 
     await usersModel.activateStatus(data, emailID)
 
-    res.redirect('http://localhost:3000/home')
+    res.redirect('http://localhost:3000/auth/user/login?activation=active')
     // response(res, activatedAt, 200, 'Congrats ! your account has been activated')
   } catch (error) {
     console.log(error)
@@ -194,24 +196,26 @@ const userActivate = async (req, res, next) => {
 }
 
 const updateUsers = async (req, res, next) => {
-  const files = req.file
+  // const files = req.file
+  // console.log(files)
   const emailID = req.decoded.email
   const { name, email, password, phone, activationStatus, photo } = req.body
   const updatedAt = new Date()
+  let photoCloud
 
   const { rows: [userDetail] } = await usersModel.usersDetail(emailID)
   delete userDetail.password
-  const previousPhoto = (userDetail.photo).replace('http://localhost:4000/img/', '')
+  // const previousPhoto = (userDetail.photo).replace('http://localhost:4000/img/', '')
 
   // console.log(files)
-  if (files !== undefined) {
-    console.log('Deleting Previous Photo')
-    fs.unlink(`./upload/${previousPhoto}`, function (err) {
-      if (err) {
-        console.log('error while deleting the file ' + err)
-      }
-    })
-  }
+  // if (files !== undefined) {
+  //   console.log('Deleting Previous Photo')
+  //   fs.unlink(`./upload/${previousPhoto}`, function (err) {
+  //     if (err) {
+  //       console.log('error while deleting the file ' + err)
+  //     }
+  //   })
+  // }
 
   const data = {
     name,
@@ -223,10 +227,11 @@ const updateUsers = async (req, res, next) => {
     updatedAt
   }
 
-  // upload single image
-  if (req.file !== undefined) {
-    data.photo = `http://${req.get('host')}/img/${req.file.filename}`
-  }
+  // upload single image ke local
+  // if (req.file !== undefined) {
+  //   photoCloud = req.file.path
+  //   data.photo = `http://${req.get('host')}/img/${req.file.filename}`
+  // }
 
   try {
     const { rows: [count] } = await usersModel.checkExisting(emailID)
@@ -234,6 +239,25 @@ const updateUsers = async (req, res, next) => {
 
     if (result === 0) {
       return notFoundRes(res, 404, 'Data not found')
+    }
+
+    // Upload single ke Cloudinary
+    if (req.file !== undefined) {
+      photoCloud = req.file.path
+
+      const url = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload(photoCloud, { folder: 'recipedia/user' }, function (error, result) {
+          if (result) {
+            resolve(result.url)
+          } else if (error) {
+            reject(error)
+          }
+        })
+      })
+
+      data.photo = url
+    } else {
+      console.log('update profile without edit photo')
     }
 
     await usersModel.updateProfile(data, emailID)

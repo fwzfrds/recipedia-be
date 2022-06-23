@@ -19,7 +19,9 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors())
 app.use(morgan('dev'))
-app.use(helmet())
+app.use(helmet({
+  crossOriginResourcePolicy: false
+}))
 app.use(xss())
 
 app.use('/v1', mainRoute)
