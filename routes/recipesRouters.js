@@ -16,7 +16,7 @@ const { protect, isUser } = require('../middlewares/authMiddleware')
 const uploadAssets = require('../middlewares/uploadAssets')
 const uploadCloudinaryAssets = require('../middlewares/uploadCloudinaryAssets')
 
-//  ----> /users.....
+//  ----> /recipes.....
 router
   .get('/', getAllRecipe)
   .get('/liked', protect, isUser, getLikedRecipe)

@@ -74,16 +74,16 @@ const insertRecipe = async (req, res, next) => {
   let photo
   let video
   const idUser = id
-  console.log(idUser)
-  let photoCloud
+
+  console.log(req.files)
   // let videoCloud
 
-  //   upload single image
+  //   upload single image to local
   // if (req.files.photo) {
   //   photo = `http://${req.get('host')}/img/recipe/photo/${req.files.photo[0].filename}`
   // }
 
-  //   upload single video
+  //   upload single video local
   // if (req.files.video) {
   //   video = `http://${req.get('host')}/video/recipe/video/${req.files.video[0].filename}`
   // }
@@ -107,12 +107,12 @@ const insertRecipe = async (req, res, next) => {
   }
 
   try {
-  // Upload single ke Cloudinary
+    // Upload Photo single ke Cloudinary
     if (req.files.photo) {
-      photoCloud = req.files.photo[0].path
+      photo = req.files.photo[0].path
 
       const url = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload(photoCloud, { folder: 'samples' }, function (error, result) {
+        cloudinary.uploader.upload(photo, { folder: 'recipedia/photos' }, function (error, result) {
           if (result) {
             resolve(result.url)
           } else if (error) {
@@ -122,17 +122,35 @@ const insertRecipe = async (req, res, next) => {
       })
 
       data.photo = url
-      console.log(photoCloud)
     } else {
-      console.log('update profile without edit photo')
+      console.log('add recipe without edit photo')
     }
 
+    // Upload Photo single ke Cloudinary
+    if (req.files.video) {
+      video = req.files.video[0].path
+
+      const url = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload(video, { folder: 'recipedia/videos', resource_type: 'video' }, function (error, result) {
+          if (result) {
+            resolve(result.url)
+          } else if (error) {
+            reject(error)
+          }
+        })
+      })
+
+      data.video = url
+    } else {
+      console.log('add recipe without edit video')
+    }
     // await recipesModel.insertRecipeData(recipeData)
     // await recipesModel.insertRecipeAssets(recipeAssets)
 
     response(res, data, 201, 'Add new recipe success')
   } catch (error) {
     console.log(error)
+    // Code below is for handling uploading error to local
     // const errorPhoto = (photo).replace('http://localhost:4000/img/recipe/photo', '')
     // const errorVideo = (video).replace('http://localhost:4000/video/recipe/video', '')
     // if (error) {
@@ -289,51 +307,56 @@ const updateRecipe = async (req, res, next) => {
   const updatedAt = new Date()
   let photo
   let video
+  console.log(req.files)
 
+  // To unlink if recipe doesn't exist in database
   const { rows: [recipeDetail] } = await recipesModel.recipeDetail(recipeID)
   if (!recipeDetail) {
-    notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
-    if (req.files.photo) {
-      fs.unlink(`./upload/recipe/photo/${req.files.photo[0].filename}`, function (err) {
-        if (err) {
-          console.log('error while deleting the file ' + err)
-        }
-      })
-    }
-
-    if (req.files.video) {
-      fs.unlink(`./upload/recipe/video/${req.files.video[0].filename}`, function (err) {
-        if (err) {
-          console.log('error while deleting the file ' + err)
-        }
-      })
-    }
-    return
+    return notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
   }
+  // if (!recipeDetail) {
+  //   notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
+  //   if (req.files.photo) {
+  //     fs.unlink(`./upload/recipe/photo/${req.files.photo[0].filename}`, function (err) {
+  //       if (err) {
+  //         console.log('error while deleting the file ' + err)
+  //       }
+  //     })
+  //   }
 
-  //   upload single image
-  if (req.files.photo) {
-    photo = `http://${req.get('host')}/img/recipe/photo/${req.files.photo[0].filename}`
-    console.log('Deleting Previous Photo')
-    const previousPhoto = (recipeDetail.photo).replace('http://localhost:4000/img/recipe/photo', '')
-    fs.unlink(`./upload/recipe/photo/${previousPhoto}`, function (err) {
-      if (err) {
-        console.log('error while deleting the file ' + err)
-      }
-    })
-  }
+  //   if (req.files.video) {
+  //     fs.unlink(`./upload/recipe/video/${req.files.video[0].filename}`, function (err) {
+  //       if (err) {
+  //         console.log('error while deleting the file ' + err)
+  //       }
+  //     })
+  //   }
+  //   return
+  // }
 
-  //   upload single video
-  if (req.files.video) {
-    video = `http://${req.get('host')}/video/recipe/video/${req.files.video[0].filename}`
-    console.log('Deleting Previous Video')
-    const previousVideo = (recipeDetail.photo).replace('http://localhost:4000/video/recipe/video', '')
-    fs.unlink(`./upload/recipe/video/${previousVideo}`, function (err) {
-      if (err) {
-        console.log('error while deleting the file ' + err)
-      }
-    })
-  }
+  //   upload single image to local
+  // if (req.files.photo) {
+  //   photo = `http://${req.get('host')}/img/recipe/photo/${req.files.photo[0].filename}`
+  //   console.log('Deleting Previous Photo')
+  //   const previousPhoto = (recipeDetail.photo).replace('http://localhost:4000/img/recipe/photo', '')
+  //   fs.unlink(`./upload/recipe/photo/${previousPhoto}`, function (err) {
+  //     if (err) {
+  //       console.log('error while deleting the file ' + err)
+  //     }
+  //   })
+  // }
+
+  //   upload single video to local
+  // if (req.files.video) {
+  //   video = `http://${req.get('host')}/video/recipe/video/${req.files.video[0].filename}`
+  //   console.log('Deleting Previous Video')
+  //   const previousVideo = (recipeDetail.photo).replace('http://localhost:4000/video/recipe/video', '')
+  //   fs.unlink(`./upload/recipe/video/${previousVideo}`, function (err) {
+  //     if (err) {
+  //       console.log('error while deleting the file ' + err)
+  //     }
+  //   })
+  // }
 
   const recipeUpdatedData = {
     title,
@@ -347,42 +370,90 @@ const updateRecipe = async (req, res, next) => {
     updatedAt
   }
 
-  const updatedData = {
-    ...recipeUpdatedData,
-    ...recipeUpdateAssets
+  if (recipeUpdatedData.title === '') {
+    // updatedData.title = undefined
+    delete recipeUpdatedData.title
+  }
+
+  if (recipeUpdatedData.ingredients === '') {
+    // recipeUpdatedData.ingredients = undefined
+    delete recipeUpdatedData.ingredients
   }
 
   try {
-    console.log(recipeUpdatedData)
+    // Upload Photo single ke Cloudinary
+    if (req.files.photo) {
+      photo = req.files.photo[0].path
+
+      const url = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload(photo, { folder: 'recipedia/photos' }, function (error, result) {
+          if (result) {
+            resolve(result.url)
+          } else if (error) {
+            reject(error)
+          }
+        })
+      })
+
+      recipeUpdateAssets.photo = url
+    } else {
+      console.log('add recipe without edit photo')
+    }
+
+    // Upload Photo single ke Cloudinary
+    if (req.files.video) {
+      video = req.files.video[0].path
+
+      const url = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload(video, { folder: 'recipedia/videos', resource_type: 'video' }, function (error, result) {
+          if (result) {
+            resolve(result.url)
+          } else if (error) {
+            reject(error)
+          }
+        })
+      })
+
+      recipeUpdateAssets.video = url
+    } else {
+      console.log('add recipe without edit video')
+    }
+
     if (recipeUpdatedData.title || recipeUpdatedData.ingredients) {
       await recipesModel.updateRecipeData(recipeUpdatedData, recipeID, userID)
     }
 
-    console.log(recipeUpdateAssets)
     if (recipeUpdateAssets.photo || recipeUpdateAssets.video) {
       await recipesModel.updateRecipeAssets(recipeUpdateAssets, recipeID)
     }
 
+    const updatedData = {
+      ...recipeUpdatedData,
+      ...recipeUpdateAssets
+    }
+
+    console.log(updatedData)
+
     response(res, updatedData, 201, 'Add new recipe success')
   } catch (error) {
     console.log(error)
-    if (error) {
-      if (photo) {
-        const errorPhoto = (photo).replace('http://localhost:4000/img/recipe/photo', '')
-        fs.unlink(`./upload/recipe/photo/${errorPhoto}`, function (err) {
-          if (err) {
-            console.log('error while deleting the file ' + err)
-          }
-        })
-      } else if (video) {
-        const errorVideo = (video).replace('http://localhost:4000/video/recipe/video', '')
-        fs.unlink(`./upload/recipe/video/${errorVideo}`, function (err) {
-          if (err) {
-            console.log('error while deleting the file ' + err)
-          }
-        })
-      }
-    }
+    // if (error) {
+    //   if (photo) {
+    //     const errorPhoto = (photo).replace('http://localhost:4000/img/recipe/photo', '')
+    //     fs.unlink(`./upload/recipe/photo/${errorPhoto}`, function (err) {
+    //       if (err) {
+    //         console.log('error while deleting the file ' + err)
+    //       }
+    //     })
+    //   } else if (video) {
+    //     const errorVideo = (video).replace('http://localhost:4000/video/recipe/video', '')
+    //     fs.unlink(`./upload/recipe/video/${errorVideo}`, function (err) {
+    //       if (err) {
+    //         console.log('error while deleting the file ' + err)
+    //       }
+    //     })
+    //   }
+    // }
     next(errorServer)
   }
 }
