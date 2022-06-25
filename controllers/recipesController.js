@@ -347,62 +347,22 @@ const getSavedRecipe = async (req, res, next) => {
 
 const updateRecipe = async (req, res, next) => {
   const userID = req.decoded.id
-  console.log(userID)
   const recipeID = req.params.id
   const { title, ingredients } = req.body
   const updatedAt = new Date()
   let photo
   let video
-  console.log(req.files)
 
-  // To unlink if recipe doesn't exist in database
+  // To check if recipe doesn't exist in database
   const { rows: [recipeDetail] } = await recipesModel.recipeDetail(recipeID)
   if (!recipeDetail) {
     return notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
   }
-  // if (!recipeDetail) {
-  //   notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
-  //   if (req.files.photo) {
-  //     fs.unlink(`./upload/recipe/photo/${req.files.photo[0].filename}`, function (err) {
-  //       if (err) {
-  //         console.log('error while deleting the file ' + err)
-  //       }
-  //     })
-  //   }
 
-  //   if (req.files.video) {
-  //     fs.unlink(`./upload/recipe/video/${req.files.video[0].filename}`, function (err) {
-  //       if (err) {
-  //         console.log('error while deleting the file ' + err)
-  //       }
-  //     })
-  //   }
-  //   return
-  // }
-
-  //   upload single image to local
-  // if (req.files.photo) {
-  //   photo = `http://${req.get('host')}/img/recipe/photo/${req.files.photo[0].filename}`
-  //   console.log('Deleting Previous Photo')
-  //   const previousPhoto = (recipeDetail.photo).replace('http://localhost:4000/img/recipe/photo', '')
-  //   fs.unlink(`./upload/recipe/photo/${previousPhoto}`, function (err) {
-  //     if (err) {
-  //       console.log('error while deleting the file ' + err)
-  //     }
-  //   })
-  // }
-
-  //   upload single video to local
-  // if (req.files.video) {
-  //   video = `http://${req.get('host')}/video/recipe/video/${req.files.video[0].filename}`
-  //   console.log('Deleting Previous Video')
-  //   const previousVideo = (recipeDetail.photo).replace('http://localhost:4000/video/recipe/video', '')
-  //   fs.unlink(`./upload/recipe/video/${previousVideo}`, function (err) {
-  //     if (err) {
-  //       console.log('error while deleting the file ' + err)
-  //     }
-  //   })
-  // }
+  const { rowCount } = await recipesModel.recDetailByUserID(recipeID, `'${userID}'`)
+  if (rowCount === 0) {
+    return notFoundRes(res, 404, 'You cannot edit others person recipe')
+  }
 
   const recipeUpdatedData = {
     title,
@@ -442,8 +402,26 @@ const updateRecipe = async (req, res, next) => {
       })
 
       recipeUpdateAssets.photo = url
+
+      // Delete Previous image
+      const photoCloud = recipeDetail.photo
+      let cloudinaryIdPhoto = photoCloud.split('/')
+      cloudinaryIdPhoto = cloudinaryIdPhoto.slice(-1)
+      cloudinaryIdPhoto = cloudinaryIdPhoto[0].split('.')
+      cloudinaryIdPhoto = cloudinaryIdPhoto[0]
+
+      const delResultPhoto = await new Promise((resolve, reject) => {
+        cloudinary.uploader.destroy(`recipedia/photos/${cloudinaryIdPhoto}`, { resource_type: 'image' }, function (error, result) {
+          if (result) {
+            resolve(result)
+          } else if (error) {
+            reject(error)
+          }
+        })
+      })
+      console.log(delResultPhoto)
     } else {
-      console.log('add recipe without edit photo')
+      console.log('edit recipe without edit photo')
     }
 
     // Upload Photo single ke Cloudinary
@@ -461,9 +439,29 @@ const updateRecipe = async (req, res, next) => {
       })
 
       recipeUpdateAssets.video = url
+
+      // Delete Previous Video
+      const videoCloud = recipeDetail.video
+      let cloudinaryIdVideo = videoCloud.split('/')
+      cloudinaryIdVideo = cloudinaryIdVideo.slice(-1)
+      cloudinaryIdVideo = cloudinaryIdVideo[0].split('.')
+      cloudinaryIdVideo = cloudinaryIdVideo[0]
+
+      const delResultVideo = await new Promise((resolve, reject) => {
+        cloudinary.uploader.destroy(`recipedia/videos/${cloudinaryIdVideo}`, { resource_type: 'video' }, function (error, result) {
+          if (result) {
+            resolve(result)
+          } else if (error) {
+            reject(error)
+          }
+        })
+      })
+      console.log(delResultVideo)
     } else {
-      console.log('add recipe without edit video')
+      console.log('edit recipe without edit video')
     }
+
+    console.log(recipeUpdatedData)
 
     if (recipeUpdatedData.title || recipeUpdatedData.ingredients) {
       await recipesModel.updateRecipeData(recipeUpdatedData, recipeID, userID)
@@ -473,33 +471,16 @@ const updateRecipe = async (req, res, next) => {
       await recipesModel.updateRecipeAssets(recipeUpdateAssets, recipeID)
     }
 
+    console.log(recipeDetail)
+
     const updatedData = {
       ...recipeUpdatedData,
       ...recipeUpdateAssets
     }
 
-    console.log(updatedData)
-
     response(res, updatedData, 201, 'Add new recipe success')
   } catch (error) {
     console.log(error)
-    // if (error) {
-    //   if (photo) {
-    //     const errorPhoto = (photo).replace('http://localhost:4000/img/recipe/photo', '')
-    //     fs.unlink(`./upload/recipe/photo/${errorPhoto}`, function (err) {
-    //       if (err) {
-    //         console.log('error while deleting the file ' + err)
-    //       }
-    //     })
-    //   } else if (video) {
-    //     const errorVideo = (video).replace('http://localhost:4000/video/recipe/video', '')
-    //     fs.unlink(`./upload/recipe/video/${errorVideo}`, function (err) {
-    //       if (err) {
-    //         console.log('error while deleting the file ' + err)
-    //       }
-    //     })
-    //   }
-    // }
     next(errorServer)
   }
 }
@@ -508,29 +489,6 @@ const deleteRecipe = async (req, res, next) => {
   const recipeID = req.params.id
 
   const { rows: [recipeDetail] } = await recipesModel.recipeDetail(recipeID)
-
-  // Remove Photo/video from local
-  // if (recipeDetail) {
-  //   if (recipeDetail.photo) {
-  //     const photo = (recipeDetail.photo).replace('http://localhost:4000/img/recipe/photo/', '')
-  //     fs.unlink(`./upload/recipe/photo/${photo}`, function (err) {
-  //       if (err) {
-  //         console.log('error while deleting the file ' + err)
-  //       }
-  //     })
-  //   }
-
-  //   if (recipeDetail.video) {
-  //     const video = (recipeDetail.video).replace('http://localhost:4000/video/recipe/video/', '')
-  //     fs.unlink(`./upload/recipe/video/${video}`, function (err) {
-  //       if (err) {
-  //         console.log('error while deleting the file ' + err)
-  //       }
-  //     })
-  //   }
-  // } else {
-  //   return notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
-  // }
 
   try {
     if (recipeDetail) {
@@ -541,7 +499,7 @@ const deleteRecipe = async (req, res, next) => {
         cloudinaryIdPhoto = cloudinaryIdPhoto[0].split('.')
         cloudinaryIdPhoto = cloudinaryIdPhoto[0]
 
-        const deleteResult = await new Promise((resolve, reject) => {
+        const delResPhoto = await new Promise((resolve, reject) => {
           cloudinary.uploader.destroy(`recipedia/photos/${cloudinaryIdPhoto}`, { resource_type: 'image' }, function (error, result) {
             if (result) {
               resolve(result)
@@ -550,18 +508,18 @@ const deleteRecipe = async (req, res, next) => {
             }
           })
         })
-        console.log(deleteResult)
+        console.log(delResPhoto)
       }
 
       if (recipeDetail.video) {
         const video = recipeDetail.video
-        let cloudinaryId = video.split('/')
-        cloudinaryId = cloudinaryId.slice(-1)
-        cloudinaryId = cloudinaryId[0].split('.')
-        cloudinaryId = cloudinaryId[0]
+        let cloudinaryIdVideo = video.split('/')
+        cloudinaryIdVideo = cloudinaryIdVideo.slice(-1)
+        cloudinaryIdVideo = cloudinaryIdVideo[0].split('.')
+        cloudinaryIdVideo = cloudinaryIdVideo[0]
 
-        const deleteResult = await new Promise((resolve, reject) => {
-          cloudinary.uploader.destroy(`recipedia/videos/${cloudinaryId}`, { resource_type: 'video' }, function (error, result) {
+        const delResVideo = await new Promise((resolve, reject) => {
+          cloudinary.uploader.destroy(`recipedia/videos/${cloudinaryIdVideo}`, { resource_type: 'video' }, function (error, result) {
             if (result) {
               resolve(result)
             } else if (error) {
@@ -569,7 +527,7 @@ const deleteRecipe = async (req, res, next) => {
             }
           })
         })
-        console.log(deleteResult)
+        console.log(delResVideo)
       }
     } else {
       return notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')

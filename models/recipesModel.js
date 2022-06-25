@@ -128,6 +128,18 @@ const recipeDetail = (recipeID) => {
   })
 }
 
+const recDetailByUserID = (recipeID, userID) => {
+  return new Promise((resolve, reject) => {
+    pool.query(`SELECT recipes.*, assets.image AS photo, assets.video, users.name AS recipe_by FROM recipes INNER JOIN assets ON recipes.id = assets.id_recipe INNER JOIN users ON recipes.id_user = users.id WHERE recipes.id = '${recipeID}' AND recipes.id_user = ${userID} ;`, (error, result) => {
+      if (!error) {
+        resolve(result)
+      } else {
+        reject(error)
+      }
+    })
+  })
+}
+
 const updateRecipeData = ({ title, ingredients, updatedAt }, recipeID, userID) => {
   return new Promise((resolve, reject) => {
     pool.query(`UPDATE recipes SET 
@@ -194,6 +206,7 @@ module.exports = {
   insertLikedRecipe,
   insertSavedRecipe,
   recipeDetail,
+  recDetailByUserID,
   updateRecipeData,
   updateRecipeAssets,
   checkExisting,

@@ -111,6 +111,7 @@ const updateProfile = ({
                 updated_at = COALESCE($7, updated_at) 
                 WHERE email = $8;`, [name, email, password, phone, activationStatus, photo, updatedAt, emailID], (err, result) => {
       if (!err) {
+        console.log(result)
         resolve(result)
       } else {
         reject(new Error(err))
