@@ -12,6 +12,18 @@ const getAllRecipe = ({ limit, offset, sortBy, sortOrder, search }) => {
   })
 }
 
+const getRecByUserID = ({ limit, offset, sortBy, sortOrder, search }, userID) => {
+  return new Promise((resolve, reject) => {
+    pool.query(`SELECT recipes.*, assets.image AS photo, assets.video, users.name AS recipe_by FROM recipes INNER JOIN assets ON recipes.id = assets.id_recipe INNER JOIN users ON recipes.id_user = users.id WHERE recipes.id_user = ${userID} AND title ILIKE '%${search}%' ORDER BY ${sortBy} ${sortOrder} LIMIT $1 OFFSET $2`, [limit, offset], (err, result) => {
+      if (!err) {
+        resolve(result)
+      } else {
+        reject(new Error(err))
+      }
+    })
+  })
+}
+
 const getLikedRecipe = ({ limit, offset, sortBy, sortOrder, search, idUser }) => {
   console.log(idUser)
   console.log(typeof idUser)
@@ -42,6 +54,10 @@ const getSavedRecipe = ({ limit, offset, sortBy, sortOrder, search, idUser }) =>
 
 const countRecipes = () => {
   return pool.query('SELECT COUNT(*) AS total FROM recipes')
+}
+
+const countRecByUserID = (userID) => {
+  return pool.query(`SELECT COUNT(*) AS total FROM recipes WHERE id_user = ${userID}`)
 }
 
 const countLikedRecipes = (idUser) => {
@@ -166,9 +182,11 @@ const deleteRecipeAssets = (recipeID) => {
 
 module.exports = {
   getAllRecipe,
+  getRecByUserID,
   getLikedRecipe,
   getSavedRecipe,
   countRecipes,
+  countRecByUserID,
   countLikedRecipes,
   countSavedRecipes,
   insertRecipeData,

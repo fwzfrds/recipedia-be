@@ -1,5 +1,5 @@
 const recipesModel = require('../models/recipesModel')
-const fs = require('fs')
+// const fs = require('fs')
 const createError = require('http-errors')
 const { v4: uuidv4 } = require('uuid')
 const { response, notFoundRes } = require('../helper/common')
@@ -10,7 +10,7 @@ const errorServer = new createError.InternalServerError()
 const getAllRecipe = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1
-    let limit = parseInt(req.query.limit) || 3
+    let limit = parseInt(req.query.limit) || 6
     const offset = (page - 1) * limit
 
     const sortBy = req.query.sortby || 'created_at'
@@ -21,9 +21,49 @@ const getAllRecipe = async (req, res, next) => {
     const resultCount = await recipesModel.getAllRecipe({ sortBy, sortOrder, search })
 
     const { rows: [count] } = await recipesModel.countRecipes()
-    console.log(count)
-    console.log((result.rows).length)
-    console.log((resultCount.rows).length)
+    const totalData = search === '' ? parseInt(count.total) : (resultCount.rows).length
+    const dataInThisPage = (result.rows).length
+
+    if (totalData < limit) {
+      limit = totalData
+    }
+
+    if ((result.rows).length === 0) {
+      notFoundRes(res, 404, 'Data not found')
+    }
+
+    const totalPage = Math.ceil(totalData / limit)
+    const pagination = {
+      currentPage: page,
+      dataInThisPage,
+      dataPerPage: limit,
+      totalData,
+      totalPage
+    }
+
+    response(res, result.rows, 200, 'Get data success', pagination)
+  } catch (error) {
+    console.log(error)
+    next(errorServer)
+  }
+}
+
+const getRecByUserID = async (req, res, next) => {
+  const userID = req.decoded.id
+
+  try {
+    const page = parseInt(req.query.page) || 1
+    let limit = parseInt(req.query.limit) || 4
+    const offset = (page - 1) * limit
+
+    const sortBy = req.query.sortby || 'created_at'
+    const sortOrder = req.query.sortorder || ''
+    const search = req.query.search || ''
+
+    const result = await recipesModel.getRecByUserID({ limit, offset, sortBy, sortOrder, search }, `'${userID}'`)
+    const resultCount = await recipesModel.getRecByUserID({ sortBy, sortOrder, search, userID }, `'${userID}'`)
+
+    const { rows: [count] } = await recipesModel.countRecByUserID(`'${userID}'`)
     const totalData = search === '' ? parseInt(count.total) : (resultCount.rows).length
     const dataInThisPage = (result.rows).length
 
@@ -121,7 +161,7 @@ const insertRecipe = async (req, res, next) => {
         })
       })
 
-      data.photo = url
+      recipeAssets.photo = url
     } else {
       console.log('add recipe without edit photo')
     }
@@ -140,12 +180,12 @@ const insertRecipe = async (req, res, next) => {
         })
       })
 
-      data.video = url
+      recipeAssets.video = url
     } else {
       console.log('add recipe without edit video')
     }
-    // await recipesModel.insertRecipeData(recipeData)
-    // await recipesModel.insertRecipeAssets(recipeAssets)
+    await recipesModel.insertRecipeData(recipeData)
+    await recipesModel.insertRecipeAssets(recipeAssets)
 
     response(res, data, 201, 'Add new recipe success')
   } catch (error) {
@@ -223,7 +263,7 @@ const getLikedRecipe = async (req, res, next) => {
 
   try {
     const page = parseInt(req.query.page) || 1
-    let limit = parseInt(req.query.limit) || 4
+    let limit = parseInt(req.query.limit) || 2
     const offset = (page - 1) * limit
 
     const sortBy = req.query.sortby || 'random ()'
@@ -231,9 +271,11 @@ const getLikedRecipe = async (req, res, next) => {
     const search = req.query.search || ''
 
     const result = await recipesModel.getLikedRecipe({ limit, offset, sortBy, sortOrder, search, idUser })
+    const resultCount = await recipesModel.getLikedRecipe({ sortBy, sortOrder, search, idUser })
 
     const { rows: [count] } = await recipesModel.countLikedRecipes(idUser)
-    const totalData = search === '' ? parseInt(count.total) : (result.rows).length
+    const totalData = search === '' ? parseInt(count.total) : (resultCount.rows).length
+    const dataInThisPage = (result.rows).length
 
     if (totalData < limit) {
       limit = totalData
@@ -246,6 +288,7 @@ const getLikedRecipe = async (req, res, next) => {
     const totalPage = Math.ceil(totalData / limit)
     const pagination = {
       currentPage: page,
+      dataInThisPage,
       dataPerPage: limit,
       totalData,
       totalPage
@@ -264,7 +307,7 @@ const getSavedRecipe = async (req, res, next) => {
 
   try {
     const page = parseInt(req.query.page) || 1
-    let limit = parseInt(req.query.limit) || 4
+    let limit = parseInt(req.query.limit) || 2
     const offset = (page - 1) * limit
 
     const sortBy = req.query.sortby || 'random ()'
@@ -272,9 +315,11 @@ const getSavedRecipe = async (req, res, next) => {
     const search = req.query.search || ''
 
     const result = await recipesModel.getSavedRecipe({ limit, offset, sortBy, sortOrder, search, idUser })
+    const resultCount = await recipesModel.getLikedRecipe({ sortBy, sortOrder, search, idUser })
 
     const { rows: [count] } = await recipesModel.countSavedRecipes(idUser)
-    const totalData = search === '' ? parseInt(count.total) : (result.rows).length
+    const totalData = search === '' ? parseInt(count.total) : (resultCount.rows).length
+    const dataInThisPage = (result.rows).length
 
     if (totalData < limit) {
       limit = totalData
@@ -287,6 +332,7 @@ const getSavedRecipe = async (req, res, next) => {
     const totalPage = Math.ceil(totalData / limit)
     const pagination = {
       currentPage: page,
+      dataInThisPage,
       dataPerPage: limit,
       totalData,
       totalPage
@@ -463,29 +509,72 @@ const deleteRecipe = async (req, res, next) => {
 
   const { rows: [recipeDetail] } = await recipesModel.recipeDetail(recipeID)
 
-  if (recipeDetail) {
-    if (recipeDetail.photo) {
-      const photo = (recipeDetail.photo).replace('http://localhost:4000/img/recipe/photo/', '')
-      fs.unlink(`./upload/recipe/photo/${photo}`, function (err) {
-        if (err) {
-          console.log('error while deleting the file ' + err)
-        }
-      })
-    }
+  // Remove Photo/video from local
+  // if (recipeDetail) {
+  //   if (recipeDetail.photo) {
+  //     const photo = (recipeDetail.photo).replace('http://localhost:4000/img/recipe/photo/', '')
+  //     fs.unlink(`./upload/recipe/photo/${photo}`, function (err) {
+  //       if (err) {
+  //         console.log('error while deleting the file ' + err)
+  //       }
+  //     })
+  //   }
 
-    if (recipeDetail.video) {
-      const video = (recipeDetail.video).replace('http://localhost:4000/video/recipe/video/', '')
-      fs.unlink(`./upload/recipe/video/${video}`, function (err) {
-        if (err) {
-          console.log('error while deleting the file ' + err)
-        }
-      })
-    }
-  } else {
-    return notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
-  }
+  //   if (recipeDetail.video) {
+  //     const video = (recipeDetail.video).replace('http://localhost:4000/video/recipe/video/', '')
+  //     fs.unlink(`./upload/recipe/video/${video}`, function (err) {
+  //       if (err) {
+  //         console.log('error while deleting the file ' + err)
+  //       }
+  //     })
+  //   }
+  // } else {
+  //   return notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
+  // }
 
   try {
+    if (recipeDetail) {
+      if (recipeDetail.photo) {
+        const photo = recipeDetail.photo
+        let cloudinaryIdPhoto = photo.split('/')
+        cloudinaryIdPhoto = cloudinaryIdPhoto.slice(-1)
+        cloudinaryIdPhoto = cloudinaryIdPhoto[0].split('.')
+        cloudinaryIdPhoto = cloudinaryIdPhoto[0]
+
+        const deleteResult = await new Promise((resolve, reject) => {
+          cloudinary.uploader.destroy(`recipedia/photos/${cloudinaryIdPhoto}`, { resource_type: 'image' }, function (error, result) {
+            if (result) {
+              resolve(result)
+            } else if (error) {
+              reject(error)
+            }
+          })
+        })
+        console.log(deleteResult)
+      }
+
+      if (recipeDetail.video) {
+        const video = recipeDetail.video
+        let cloudinaryId = video.split('/')
+        cloudinaryId = cloudinaryId.slice(-1)
+        cloudinaryId = cloudinaryId[0].split('.')
+        cloudinaryId = cloudinaryId[0]
+
+        const deleteResult = await new Promise((resolve, reject) => {
+          cloudinary.uploader.destroy(`recipedia/videos/${cloudinaryId}`, { resource_type: 'video' }, function (error, result) {
+            if (result) {
+              resolve(result)
+            } else if (error) {
+              reject(error)
+            }
+          })
+        })
+        console.log(deleteResult)
+      }
+    } else {
+      return notFoundRes(res, 404, 'Data not found, you cannot edit data which is not exist')
+    }
+
     recipesModel.deleteRecipeData(recipeID)
     recipesModel.deleteRecipeAssets(recipeID)
 
@@ -498,6 +587,7 @@ const deleteRecipe = async (req, res, next) => {
 
 module.exports = {
   getAllRecipe,
+  getRecByUserID,
   insertRecipe,
   getRecipeDetail,
   getLikedRecipe,

@@ -4,6 +4,7 @@ const {
   insertRecipe,
   getRecipeDetail,
   getAllRecipe,
+  getRecByUserID,
   updateRecipe,
   deleteRecipe,
   insertLikedRecipe,
@@ -19,6 +20,7 @@ const uploadCloudinaryAssets = require('../middlewares/uploadCloudinaryAssets')
 //  ----> /recipes.....
 router
   .get('/', getAllRecipe)
+  .get('/user-recipe', protect, isUser, getRecByUserID)
   .get('/liked', protect, isUser, getLikedRecipe)
   .get('/saved', protect, isUser, getSavedRecipe)
   // .get('/saved', protect, isUser, getLikedRecipe)
