@@ -141,11 +141,6 @@ const insertRecipe = async (req, res, next) => {
     video
   }
 
-  const data = {
-    ...recipeData,
-    ...recipeAssets
-  }
-
   try {
     // Upload Photo single ke Cloudinary
     if (req.files.photo) {
@@ -186,6 +181,11 @@ const insertRecipe = async (req, res, next) => {
     }
     await recipesModel.insertRecipeData(recipeData)
     await recipesModel.insertRecipeAssets(recipeAssets)
+
+    const data = {
+      ...recipeData,
+      ...recipeAssets
+    }
 
     response(res, data, 201, 'Add new recipe success')
   } catch (error) {
