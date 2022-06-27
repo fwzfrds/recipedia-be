@@ -53,6 +53,7 @@ const getUsers = async (req, res, next) => {
 
 const getProfileDetail = async (req, res, next) => {
   const email = req.decoded.email
+  console.log(email)
   const { rows: [user] } = await usersModel.usersDetail(email)
 
   if (user === undefined) {
@@ -143,10 +144,17 @@ const loginUsers = async (req, res, next) => {
     // generate token
     user.token = generateToken(payload)
     user.RefreshToken = generateRefreshToken(payload)
+    // const isCookieSecure = process.env.NODE_ENV !== 'dev' ? true : false
+    let isCookieSecure
+    if (process.env.NODE_ENV === 'dev') {
+      isCookieSecure = false
+    } else {
+      isCookieSecure = true
+    }
     res.cookie('token', user.token, {
       httpOnly: true,
       maxAge: 60 * 1000 * 60 * 12,
-      secure: process.env.NODE_ENV !== 'dev' ? true : false,
+      secure: isCookieSecure,
       path: '/',
       sameSite: 'strict'
     })

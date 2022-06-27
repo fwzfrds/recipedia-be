@@ -12,7 +12,9 @@ const {
   getLikedRecipe,
   getSavedRecipe
 } = require('../controllers/recipesController')
-const { protect, isUser } = require('../middlewares/authMiddleware')
+// const { protect, isUser } = require('../middlewares/authMiddleware')
+const { protectCookie, isUser: isUserCookie } = require('../middlewares/authCookie')
+
 // const { protect, isUser, isTokenValid } = require('../middlewares/authMiddleware')
 const uploadAssets = require('../middlewares/uploadAssets')
 const uploadCloudinaryAssets = require('../middlewares/uploadCloudinaryAssets')
@@ -20,20 +22,14 @@ const uploadCloudinaryAssets = require('../middlewares/uploadCloudinaryAssets')
 //  ----> /recipes.....
 router
   .get('/', getAllRecipe)
-  .get('/user-recipe', protect, isUser, getRecByUserID)
-  .get('/liked', protect, isUser, getLikedRecipe)
-  .get('/saved', protect, isUser, getSavedRecipe)
-  // .get('/saved', protect, isUser, getLikedRecipe)
-  // .get('/active/:token', isTokenValid, userActivate)
+  .get('/user-recipe', protectCookie, isUserCookie, getRecByUserID)
+  .get('/liked', protectCookie, isUserCookie, getLikedRecipe)
+  .get('/saved', protectCookie, isUserCookie, getSavedRecipe)
   .get('/detail/:id', getRecipeDetail)
-  // .post('/add', protect, isUser, uploadAssets, insertRecipe)
-  .post('/add', protect, isUser, uploadCloudinaryAssets, insertRecipe)
-  .post('/liked', protect, isUser, insertLikedRecipe)
-  .post('/saved', protect, isUser, insertSavedRecipe)
-//   .post('/add', protect, uploadPhoto.single('photo'), uploadVideo.single('video'), insertRecipe)
-//   .post('/login', loginUsers)
-  // .post('/refresh-token', refreshToken)
-  .put('/edit/:id', protect, isUser, uploadAssets, updateRecipe)
-  .delete('/:id', protect, isUser, deleteRecipe)
+  .post('/add', protectCookie, isUserCookie, uploadCloudinaryAssets, insertRecipe)
+  .post('/liked', protectCookie, isUserCookie, insertLikedRecipe)
+  .post('/saved', protectCookie, isUserCookie, insertSavedRecipe)
+  .put('/edit/:id', protectCookie, isUserCookie, uploadAssets, updateRecipe)
+  .delete('/:id', protectCookie, isUserCookie, deleteRecipe)
 
 module.exports = router
