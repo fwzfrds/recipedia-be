@@ -12,7 +12,7 @@ const xss = require('xss-clean')
 const path = require('path')
 
 const mainRoute = require('./routes')
-// const midCors = require('./middlewares/cors')
+// const myCors = require('./middlewares/cors')
 
 const PORT = process.env.PORT || 4000
 
@@ -20,7 +20,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
   credentials: true,
-  origin: ['http://localhost:3000', 'https://recipedia-ashen.vercel.app/']
+  // origin: ['http://localhost:3000', 'https://recipedia-ashen.vercel.app', 'https://pijarnext-fwzfrds.vercel.app/']
+  origin: [
+    'https://pijarnext-fwzfrds.vercel.app',
+    'http://localhost:3000'
+  ]
 }))
 app.use(morgan('dev'))
 app.use(cookieParser())

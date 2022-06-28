@@ -108,6 +108,24 @@ const getRecipeDetail = async (req, res) => {
   }
 }
 
+const getRec = async (req, res) => {
+  try {
+    const recipeID = req.params.id
+    const userID = req.decoded.id
+    console.log(recipeID)
+    console.log(userID)
+    const result = await recipesModel.getRec(`'${recipeID}'`, `'${userID}'`)
+
+    if ((result.rows).length === 0) {
+      return notFoundRes(res, 404, 'Data not found')
+    }
+
+    response(res, result.rows[0], 200, 'Get data success')
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const insertRecipe = async (req, res, next) => {
   const id = req.decoded.id
   const { title, ingredients } = req.body
@@ -550,6 +568,7 @@ module.exports = {
   getRecipeDetail,
   getLikedRecipe,
   getSavedRecipe,
+  getRec,
   updateRecipe,
   insertLikedRecipe,
   insertSavedRecipe,

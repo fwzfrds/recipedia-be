@@ -153,7 +153,7 @@ const loginUsers = async (req, res, next) => {
     }
     res.cookie('token', user.token, {
       httpOnly: true,
-      maxAge: 60 * 1000 * 60 * 12,
+      maxAge: 60 * 1000 * 60 * 12, // 12 hours
       secure: isCookieSecure,
       path: '/',
       sameSite: 'strict'
@@ -165,6 +165,22 @@ const loginUsers = async (req, res, next) => {
     next(new createError.InternalServerError())
   }
 }
+
+const userLogout = (req, res, next) => {
+  const data = {
+    message: 'logout success'
+  }
+
+  try {
+    res.cookie('token', '', { maxAge: 1 })
+    // res.redirect('http://localhost:3000/auth/user/login?redirect=true')
+    response(res, data, 200, 'Logout Successful')
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+// sampai sini terakhir belum solve yang kena cors pas redirect
 
 const refreshToken = (req, res, next) => {
   const refreshToken = req.body.refreshToken
@@ -311,6 +327,7 @@ module.exports = {
   getProfileDetail,
   loginUsers,
   userActivate,
+  userLogout,
   refreshToken
 }
 

@@ -52,6 +52,18 @@ const getSavedRecipe = ({ limit, offset, sortBy, sortOrder, search, idUser }) =>
   })
 }
 
+const getRec = (recipeID, userID) => {
+  return new Promise((resolve, reject) => {
+    pool.query(`SELECT * FROM recipes WHERE id = ${recipeID} AND id_user = ${userID};`, (err, result) => {
+      if (!err) {
+        resolve(result)
+      } else {
+        reject(new Error(err))
+      }
+    })
+  })
+}
+
 const countRecipes = () => {
   return pool.query('SELECT COUNT(*) AS total FROM recipes')
 }
@@ -197,6 +209,7 @@ module.exports = {
   getRecByUserID,
   getLikedRecipe,
   getSavedRecipe,
+  getRec,
   countRecipes,
   countRecByUserID,
   countLikedRecipes,

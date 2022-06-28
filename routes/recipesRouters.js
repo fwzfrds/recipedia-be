@@ -10,7 +10,8 @@ const {
   insertLikedRecipe,
   insertSavedRecipe,
   getLikedRecipe,
-  getSavedRecipe
+  getSavedRecipe,
+  getRec
 } = require('../controllers/recipesController')
 // const { protect, isUser } = require('../middlewares/authMiddleware')
 const { protectCookie, isUser: isUserCookie } = require('../middlewares/authCookie')
@@ -23,6 +24,7 @@ const uploadCloudinaryAssets = require('../middlewares/uploadCloudinaryAssets')
 router
   .get('/', getAllRecipe)
   .get('/user-recipe', protectCookie, isUserCookie, getRecByUserID)
+  .get('/:id', protectCookie, isUserCookie, getRec)
   .get('/liked', protectCookie, isUserCookie, getLikedRecipe)
   .get('/saved', protectCookie, isUserCookie, getSavedRecipe)
   .get('/detail/:id', getRecipeDetail)

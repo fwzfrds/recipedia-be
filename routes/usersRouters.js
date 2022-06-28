@@ -7,7 +7,8 @@ const {
   // deleteUsers,
   getProfileDetail,
   loginUsers,
-  userActivate
+  userActivate,
+  userLogout
   // refreshToken
 } = require('../controllers/usersController')
 // const { protect, isUser, isTokenValid } = require('../middlewares/authMiddleware')
@@ -22,6 +23,7 @@ router
   .get('/profile', protectCookie, isUserCookie, getProfileDetail)
   .post('/registration', uploadPhoto.single('photo'), insertUsers)
   .post('/login', loginUsers)
+  .get('/logout', protectCookie, isUserCookie, userLogout)
   // .post('/refresh-token', refreshToken)
   .put('/edit', protectCookie, isUserCookie, uploadCloud.single('photo'), updateUsers)
   // .delete('/:emailid', deleteUsers)
