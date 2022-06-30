@@ -9,7 +9,7 @@ const protectCookie = (req, res, next) => {
     if (!token) {
       return next(createError(400, 'server need token'))
     }
-    const decoded = jwt.verify(token, `${process.env.SECRET_KEY_JWT}`)
+    const decoded = jwt.verify(token, process.env.SECRET_KEY_JWT)
     // let decoded = jwt.verify(token, 'dsfasdfsdaf');
     // console.log(decoded);
     req.decoded = decoded
@@ -34,7 +34,7 @@ const isTokenValid = (req, res, next) => {
     if (req.params.token) {
       token = req.params.token
 
-      const decoded = jwt.verify(token, `${process.env.SECRET_KEY_JWT}`)
+      const decoded = jwt.verify(token, process.env.SECRET_KEY_JWT)
       // let decoded = jwt.verify(token, 'dsfasdfsdaf');
       // console.log(decoded);
       req.decoded = decoded

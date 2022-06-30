@@ -154,9 +154,9 @@ const loginUsers = async (req, res, next) => {
     res.cookie('token', user.token, {
       httpOnly: true,
       maxAge: 60 * 1000 * 60 * 12, // 12 hours
-      secure: true,
+      secure: false,
       path: '/',
-      sameSite: 'lax'
+      sameSite: 'none'
     })
 
     response(res, user, 200, 'Login Successful')
