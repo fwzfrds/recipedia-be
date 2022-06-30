@@ -3,9 +3,11 @@ CREATE TABLE users (id varchar(64) NOT NULL,
     email varchar(64) NOT NULL,
     password varchar(64) NOT NULL, 
     phone varchar(64),
-    status INT DEFAULT 0,  
+    status INT DEFAULT 0,
+    photo varchar(255),  
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP,
+    activated_at TIMESTAMP,
     PRIMARY KEY (id)
 );
 
@@ -22,12 +24,14 @@ CREATE TABLE gender (
 CREATE TABLE liked (
     id INT PRIMARY KEY NOT NULL GENERATED ALWAYS AS IDENTITY,
     id_recipe VARCHAR(64) NOT NULL,
+    id_user VARCHAR(64) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE saved (
     id INT PRIMARY KEY NOT NULL GENERATED ALWAYS AS IDENTITY,
     id_recipe VARCHAR(64) NOT NULL,
+    id_user VARCHAR(64) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
