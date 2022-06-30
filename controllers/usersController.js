@@ -145,18 +145,18 @@ const loginUsers = async (req, res, next) => {
     user.token = generateToken(payload)
     user.RefreshToken = generateRefreshToken(payload)
     // const isCookieSecure = process.env.NODE_ENV !== 'dev' ? true : false
-    // let isCookieSecure
-    // if (process.env.NODE_ENV === 'dev') {
-    //   isCookieSecure = false
-    // } else {
-    //   isCookieSecure = true
-    // }
+    let isCookieSecure
+    if (process.env.NODE_ENV === 'dev') {
+      isCookieSecure = false
+    } else {
+      isCookieSecure = true
+    }
     res.cookie('token', user.token, {
       httpOnly: true,
       maxAge: 60 * 1000 * 60 * 12, // 12 hours
-      secure: false,
+      secure: isCookieSecure,
       path: '/',
-      sameSite: 'none'
+      sameSite: 'strict'
     })
 
     response(res, user, 200, 'Login Successful')
