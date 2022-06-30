@@ -25,8 +25,8 @@ const getRecByUserID = ({ limit, offset, sortBy, sortOrder, search }, userID) =>
 }
 
 const getLikedRecipe = ({ limit, offset, sortBy, sortOrder, search, idUser }) => {
-  console.log(idUser)
-  console.log(typeof idUser)
+  // console.log(idUser)
+  // console.log(typeof idUser)
   return new Promise((resolve, reject) => {
     pool.query(`SELECT liked.*, recipes.title, recipes.ingredients, assets.image AS photo, assets.video, users.name AS recipe_by FROM liked INNER JOIN recipes ON liked.id_recipe = recipes.id INNER JOIN assets ON liked.id_recipe = assets.id_recipe INNER JOIN users ON liked.id_user = users.id WHERE liked.id_user = ${idUser} AND title ILIKE '%${search}%' ORDER BY ${sortBy} ${sortOrder} LIMIT $1 OFFSET $2;`, [limit, offset], (err, result) => {
       if (!err) {

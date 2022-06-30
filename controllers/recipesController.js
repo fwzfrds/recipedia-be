@@ -277,7 +277,6 @@ const insertSavedRecipe = async (req, res, next) => {
 
 const getLikedRecipe = async (req, res, next) => {
   const idUser = (`'${req.decoded.id}'`)
-  console.log(idUser)
 
   try {
     const page = parseInt(req.query.page) || 1
@@ -298,6 +297,8 @@ const getLikedRecipe = async (req, res, next) => {
     if (totalData < limit) {
       limit = totalData
     }
+
+    console.log(resultCount.rows)
 
     if ((result.rows).length === 0) {
       notFoundRes(res, 404, 'Data not found')

@@ -227,8 +227,7 @@ const userActivate = async (req, res, next) => {
 }
 
 const updateUsers = async (req, res, next) => {
-  // const files = req.file
-  // console.log(files)
+  const file = req.file
   const emailID = req.decoded.email
   const { name, email, password, phone, activationStatus, photo } = req.body
   const updatedAt = new Date()
@@ -287,10 +286,44 @@ const updateUsers = async (req, res, next) => {
       })
 
       data.photo = url
+
+      // Delete Previous image
+      const prevPhoto = userDetail.photo
+      let prevPhotoId = prevPhoto.split('/')
+      prevPhotoId = prevPhotoId.slice(-1)
+      prevPhotoId = prevPhotoId[0].split('.')
+      prevPhotoId = prevPhotoId[0]
+
+      const delResultPhoto = await new Promise((resolve, reject) => {
+        cloudinary.uploader.destroy(`recipedia/user/${prevPhotoId}`, { resource_type: 'image' }, function (error, result) {
+          if (result) {
+            resolve(result)
+          } else if (error) {
+            reject(error)
+          }
+        })
+      })
+      console.log(delResultPhoto)
     } else {
       console.log('update profile without edit photo')
     }
 
+    if (data.name === '') {
+      delete data.name
+    }
+    if (data.email === '') {
+      delete data.email
+    }
+    if (data.phone === '') {
+      delete data.phone
+    }
+    if (!file) {
+      delete data.photo
+    }
+
+    // console.log(data)
+    // console.log(file)
+    // console.log(userDetail.photo)
     await usersModel.updateProfile(data, emailID)
 
     response(res, data, 200, 'User data has just been updated')
