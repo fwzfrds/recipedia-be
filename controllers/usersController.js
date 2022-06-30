@@ -156,7 +156,7 @@ const loginUsers = async (req, res, next) => {
       maxAge: 60 * 1000 * 60 * 12, // 12 hours
       secure: isCookieSecure,
       path: '/',
-      sameSite: 'strict'
+      sameSite: 'none'
     })
 
     response(res, user, 200, 'Login Successful')
