@@ -152,7 +152,7 @@ const loginUsers = async (req, res, next) => {
       isCookieSecure = true
     }
     res.cookie('token', user.token, {
-      httpOnly: true,
+      httpOnly: false,
       maxAge: 60 * 1000 * 60 * 12, // 12 hours
       secure: isCookieSecure,
       path: '/',
