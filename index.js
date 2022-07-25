@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   // res.header('Access-Control-Allow-Origin', ['https://pijarnext-fwzfrds.vercel.app'])
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS')
   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, set-cookie, Cookie')
-  res.header('Access-Control-Expose-Headers', ['set-cookie'])
+  res.header('Access-Control-Expose-Headers', ['Set-Cookie'])
   next()
 })
 // app.use(cors())
