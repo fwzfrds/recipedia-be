@@ -3,7 +3,7 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 
-// const cors = require('cors')
+const cors = require('cors')
 const createError = require('http-errors')
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
@@ -27,14 +27,14 @@ app.use((req, res, next) => {
   next()
 })
 // app.use(cors())
-// app.use(cors({
-//   credentials: true,
-//   // origin: ['http://localhost:3000', 'https://recipedia-ashen.vercel.app', 'https://pijarnext-fwzfrds.vercel.app/']
-//   origin: [
-//     'https://pijarnext-fwzfrds.vercel.app',
-//     'http://localhost:3000'
-//   ]
-// }))
+app.use(cors({
+  credentials: true,
+  // origin: ['http://localhost:3000', 'https://recipedia-ashen.vercel.app', 'https://pijarnext-fwzfrds.vercel.app/']
+  origin: [
+    'https://pijarnext-fwzfrds.vercel.app'
+    // 'http://localhost:3000'
+  ]
+}))
 app.use(morgan('dev'))
 app.use(cookieParser())
 app.use(helmet({
