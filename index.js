@@ -18,14 +18,22 @@ const PORT = process.env.PORT || 4000
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(cors({
-  credentials: true,
-  // origin: ['http://localhost:3000', 'https://recipedia-ashen.vercel.app', 'https://pijarnext-fwzfrds.vercel.app/']
-  origin: [
-    'https://pijarnext-fwzfrds.vercel.app',
-    'http://localhost:3000'
-  ]
-}))
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', true)
+  res.header('Access-Control-Allow-Origin', ['http://localhost:3000', 'https://recipedia-fe.vercel.app/'])
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept')
+  next()
+})
+// app.use(cors())
+// app.use(cors({
+//   credentials: true,
+//   // origin: ['http://localhost:3000', 'https://recipedia-ashen.vercel.app', 'https://pijarnext-fwzfrds.vercel.app/']
+//   origin: [
+//     'https://pijarnext-fwzfrds.vercel.app',
+//     'http://localhost:3000'
+//   ]
+// }))
 app.use(morgan('dev'))
 app.use(cookieParser())
 app.use(helmet({
