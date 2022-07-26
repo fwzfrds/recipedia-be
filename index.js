@@ -27,15 +27,14 @@ app.use(express.urlencoded({ extended: false }))
 //   res.header('Access-Control-Expose-Headers', 'Set-Cookie')
 //   next()
 // })
-app.use(cors())
-// app.use(cors({
-//   credentials: true,
-//   // origin: ['http://localhost:3000', 'https://recipedia-ashen.vercel.app', 'https://pijarnext-fwzfrds.vercel.app/']
-//   origin: [
-//     'https://pijarnext-fwzfrds.vercel.app',
-//     'http://localhost:3000'
-//   ]
-// }))
+// app.use(cors())
+app.use(cors({
+  // credentials: true,
+  origin: [
+    'https://pijarnext-fwzfrds.vercel.app',
+    'http://localhost:3000'
+  ]
+}))
 app.use(morgan('dev'))
 app.use(cookieParser())
 app.use(helmet({
