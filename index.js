@@ -3,7 +3,7 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 
-// const cors = require('cors')
+const cors = require('cors')
 const createError = require('http-errors')
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
@@ -18,16 +18,16 @@ const PORT = process.env.PORT || 4000
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Credentials', true)
-  // res.header('Access-Control-Allow-Origin', ['http://localhost:3000'])
-  res.header('Access-Control-Allow-Origin', ['https://pijarnext-fwzfrds.vercel.app'])
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Set-Cookie, Cookie')
-  res.header('Access-Control-Expose-Headers', 'Set-Cookie')
-  next()
-})
-// app.use(cors())
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Credentials', true)
+//   // res.header('Access-Control-Allow-Origin', ['http://localhost:3000'])
+//   res.header('Access-Control-Allow-Origin', ['https://pijarnext-fwzfrds.vercel.app'])
+//   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS')
+//   res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Set-Cookie, Cookie')
+//   res.header('Access-Control-Expose-Headers', 'Set-Cookie')
+//   next()
+// })
+app.use(cors())
 // app.use(cors({
 //   credentials: true,
 //   // origin: ['http://localhost:3000', 'https://recipedia-ashen.vercel.app', 'https://pijarnext-fwzfrds.vercel.app/']
