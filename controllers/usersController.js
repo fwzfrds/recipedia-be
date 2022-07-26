@@ -152,11 +152,11 @@ const loginUsers = async (req, res, next) => {
       isCookieSecure = true
     }
     res.cookie('token', user.token, {
-      httpOnly: false,
+      httpOnly: true,
       maxAge: 60 * 1000 * 60 * 12, // 12 hours
       secure: isCookieSecure,
       path: '/',
-      sameSite: 'none'
+      sameSite: 'strict'
       // domain: 'https://pijarnext-fwzfrds.vercel.app'
     })
 
