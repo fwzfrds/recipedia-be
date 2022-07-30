@@ -289,21 +289,24 @@ const updateUsers = async (req, res, next) => {
 
       // Delete Previous image
       const prevPhoto = userDetail.photo
-      let prevPhotoId = prevPhoto.split('/')
-      prevPhotoId = prevPhotoId.slice(-1)
-      prevPhotoId = prevPhotoId[0].split('.')
-      prevPhotoId = prevPhotoId[0]
+      console.log(prevPhoto)
+      if (prevPhoto) {
+        let prevPhotoId = prevPhoto.split('/')
+        prevPhotoId = prevPhotoId.slice(-1)
+        prevPhotoId = prevPhotoId[0].split('.')
+        prevPhotoId = prevPhotoId[0]
 
-      const delResultPhoto = await new Promise((resolve, reject) => {
-        cloudinary.uploader.destroy(`recipedia/user/${prevPhotoId}`, { resource_type: 'image' }, function (error, result) {
-          if (result) {
-            resolve(result)
-          } else if (error) {
-            reject(error)
-          }
+        const delResultPhoto = await new Promise((resolve, reject) => {
+          cloudinary.uploader.destroy(`recipedia/user/${prevPhotoId}`, { resource_type: 'image' }, function (error, result) {
+            if (result) {
+              resolve(result)
+            } else if (error) {
+              reject(error)
+            }
+          })
         })
-      })
-      console.log(delResultPhoto)
+        console.log(delResultPhoto)
+      }
     } else {
       console.log('update profile without edit photo')
     }
