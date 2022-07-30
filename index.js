@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: false }))
 // })
 // app.use(cors())
 app.use(cors({
-  credentials: true,
+  // credentials: true,
   origin: [
     'https://recipedia-fwzfrds.vercel.app',
     'http://localhost:3000'
