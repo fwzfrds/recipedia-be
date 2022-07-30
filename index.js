@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cors({
   // credentials: true,
   origin: [
-    'https://pijarnext-fwzfrds.vercel.app',
+    'https://recipedia-fwzfrds.vercel.app',
     'http://localhost:3000'
   ]
 }))
