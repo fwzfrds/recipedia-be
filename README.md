@@ -40,6 +40,7 @@ Recipedia Rest API, is a REST API used in [`Recipedia`](https://recipedia-fwzfrd
 
 * [Node JS](https://nodejs.org/en/docs/)
 * [Express JS](https://expressjs.com/)
+* [PostgreSQL](https://www.postgresql.org/)
 * [Nodemailer](https://nodemailer.com/)
 * [Cloudinary](https://cloudinary.com/)
 
