@@ -33,7 +33,8 @@ app.use(cors({
   origin: [
     'https://recipedia-fwzfrds.vercel.app',
     'http://localhost:3000'
-  ]
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
 }))
 app.use(morgan('dev'))
 app.use(cookieParser())
